@@ -6,7 +6,12 @@ namespace LifeTracker
 {
     public class WeatherService
     {
-        private readonly HttpClient _httpClient = new HttpClient();
+        private readonly HttpClient _httpClient;
+
+        public WeatherService(HttpClient httpclient)
+        {
+            _httpClient = httpclient;
+        }
 
 
         public async Task<StationMeasurement?> GetBuienradarDataAsync()
