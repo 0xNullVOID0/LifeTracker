@@ -1,4 +1,5 @@
 using LifeTracker;
+using Microsoft.EntityFrameworkCore;
 //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
 //{
 //    // catch every exception to print in console
@@ -14,6 +15,12 @@ builder.Services.AddHttpClient<WeatherService>(client =>
 {
 
 });
+
+
+var connectionString = "Host=localhost;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword";
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
 
 var app = builder.Build();
 

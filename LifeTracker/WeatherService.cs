@@ -7,10 +7,12 @@ namespace LifeTracker
     public class WeatherService
     {
         private readonly HttpClient _httpClient;
+        private readonly AppDbContext _context;
 
-        public WeatherService(HttpClient httpclient)
+        public WeatherService(HttpClient httpclient, AppDbContext context)
         {
             _httpClient = httpclient;
+            _context = context;
         }
 
 
@@ -33,7 +35,16 @@ namespace LifeTracker
                 Console.WriteLine($"Luchtdruk: {station.AirPressure} hPa");
             }
 
+            // basic temp test save
+            await SaveMeasurementAsync(station);
+
             return station;
+        }
+
+        public async Task SaveMeasurementAsync(StationMeasurement measurement)
+        {
+            _context.WeatherLogs.Add(measurement);
+            await _context.SaveChangesAsync();
         }
     }
 
@@ -51,6 +62,8 @@ namespace LifeTracker
 
     public class StationMeasurement
     {
+        public int ID { get; set; }
+
         [JsonPropertyName("stationid")]
         public int StationId { get; set; }
 
