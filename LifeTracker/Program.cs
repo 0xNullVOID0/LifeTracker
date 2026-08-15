@@ -1,8 +1,16 @@
+using LifeTracker;
+//AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
+//{
+//    // catch every exception to print in console
+//    Console.WriteLine($"[Internal Exception] {eventArgs.Exception.GetType().Name}: {eventArgs.Exception.Message}");
+//};
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<WeatherService>();
 
 var app = builder.Build();
 
@@ -14,29 +22,40 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/buienradar", async (WeatherService weatherService) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    app.Logger.LogInformation("[API] Route: /buienradar");
+
+    try
+    {
+        var station_data = await weatherService.GetBuienradarDataAsync();
+        return station_data != null ? Results.Ok(station_data) : Results.NotFound();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[API] buienradar ERROR");
+        Console.WriteLine(ex.ToString()); 
+
+        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+    }
 })
-.WithName("GetWeatherForecast");
+.WithName("GetBuienradar");
+
+
+app.MapGet("/test", async () =>
+{
+    app.Logger.LogInformation("[API] Route: /test");
+    Console.WriteLine($"TEST TEST");
+})
+.WithName("test");
+
+
+
+app.Logger.LogInformation("\n\n--------------------------------------------------");
+app.Logger.LogInformation("LifeTracker API started");
+app.Logger.LogInformation("Buienradar endpoint: http://127.0.0.1:5070/buienradar");
+app.Logger.LogInformation("Buienradar endpoint: https://127.0.0.1:5071/buienradar");
+app.Logger.LogInformation("--------------------------------------------------\n");
 
 app.Run();
-//app.Run("127.0.0.1:0");
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
