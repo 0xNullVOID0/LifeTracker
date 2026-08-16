@@ -22,7 +22,7 @@ namespace LifeTracker
 
         public async Task<List<ActivityEvent>> GetBucketEvents(string bucketID)
         {
-            string url = $"http://localhost:5600/api/0/buckets/{bucketID}/events";
+            string url = $"{_httpClient.BaseAddress}{bucketID}/events";
 
             // TODO error handling
 

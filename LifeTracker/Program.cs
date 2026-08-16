@@ -1,5 +1,6 @@
 using LifeTracker;
 using Microsoft.EntityFrameworkCore;
+
 //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
 //{
 //    // catch every exception to print in console
@@ -12,17 +13,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient<WeatherService>(client => {
-
+    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar");
 });
 builder.Services.AddHttpClient<ActivityWatchService>(client => {
-
+    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ActivityWatch");
 });
 
 
-// TODO use config/env file for proper credentials usage instead of hardcoded
-var connectionString = "Host=localhost;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword";
+// get DB credentials and config from appsettings
+var connectionString = builder.Configuration.GetConnectionString("LifeTrackerDB")
+    ?? throw new InvalidOperationException("Connection string 'LifeTrackerDB' not found.");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, sqlOptions =>
+    {
+        sqlOptions.CommandTimeout(30); 
+    }));
 
 
 var app = builder.Build();
@@ -86,10 +92,7 @@ app.MapGet("/test", async () =>
 
 app.Logger.LogInformation("\n\n--------------------------------------------------");
 app.Logger.LogInformation("LifeTracker API started");
-app.Logger.LogInformation("Buienradar endpoint: http://127.0.0.1:5070/buienradar");
 app.Logger.LogInformation("Buienradar endpoint: https://127.0.0.1:5071/buienradar");
-
-app.Logger.LogInformation("GetActivityWatch endpoint: http://127.0.0.1:5070/activity-watch");
 app.Logger.LogInformation("GetActivityWatch endpoint: https://127.0.0.1:5071/activity-watch");
 app.Logger.LogInformation("--------------------------------------------------\n");
 

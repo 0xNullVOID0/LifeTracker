@@ -19,7 +19,7 @@ namespace LifeTracker
         public async Task<StationMeasurement?> GetBuienradarDataAsync()
         {
             // Get JSON weather data from buienradar
-            var data = await _httpClient.GetFromJsonAsync<BuienradarResponse>("https://data.buienradar.nl/2.0/feed/json");
+            var data = await _httpClient.GetFromJsonAsync<BuienradarResponse>(_httpClient.BaseAddress);
 
             // Get closest station
             var station = data?.Actual?.StationMeasurements
