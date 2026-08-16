@@ -86,8 +86,24 @@ namespace LifeTracker
 
         public async Task SaveEventsAsync(List<ActivityEvent> events)
         {
+            if (events == null || events.Count == 0)
+                return;
 
-            // TODO prevent duplicate saving, check if incoming awID's already exist
+            // fetch existing IDs from the incoming batch to prevent duplicate primary key exceptions
+            var incomingIDs = events.Select(d => d.AwID).ToList();
+            var existingIDs = await _context.ActivityWatchEvents
+                .Where(e => incomingIDs.Contains(e.AwID))
+                .Select(e => e.AwID)
+                .ToListAsync();
+
+            // filter out possible duplicates
+            events = events
+                .Where(dto => !existingIDs.Contains(dto.ID))
+                .ToList();
+
+            // check if there are still events left after filter(probably would never be empty but just in case)
+            if (events == null || events.Count == 0)
+                return;
 
             try
             {
