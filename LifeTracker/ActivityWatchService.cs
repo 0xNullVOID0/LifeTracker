@@ -10,12 +10,14 @@ namespace LifeTracker
         private readonly HttpClient _httpClient;
         private readonly AppDbContext _context;
         private readonly ActivityWatchSettings _settings;
+        private readonly ILogger<ActivityWatchService> _logger;
 
-        public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchSettings> settings)
+        public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchSettings> settings, ILogger<ActivityWatchService> logger)
         {
             _httpClient = httpclient;
             _context = context;
             _settings = settings.Value;
+            _logger = logger;
         }
 
         public async Task<List<ActivityEvent>> FetchBucketEvents()
@@ -112,9 +114,7 @@ namespace LifeTracker
             }
             catch (DbUpdateException ex)
             {
-                Console.WriteLine("\n================== DATABASE ERROR ==================");
-                Console.WriteLine(ex.InnerException?.Message ?? ex.Message);
-                Console.WriteLine("===================================================\n");
+                _logger.LogError(ex, "Database error occurred while trying to save ActivityWatch events.");
                 throw;
             }
         }

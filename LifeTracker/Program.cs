@@ -56,9 +56,7 @@ app.MapGet("/buienradar", async (WeatherService weatherService) =>
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[API] buienradar ERROR");
-        Console.WriteLine(ex.ToString()); 
-
+        app.Logger.LogError(ex, "[API] /buienradar ERROR");
         return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
     }
 })
@@ -75,9 +73,7 @@ app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchServi
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[API] activity-watch/all ERROR");
-        Console.WriteLine(ex.ToString());
-
+        app.Logger.LogError(ex, "[API] activity-watch/all ERROR");
         return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
     }
 })
@@ -96,9 +92,7 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[API] activity-watch/new ERROR");
-        Console.WriteLine(ex.ToString());
-
+        app.Logger.LogError(ex, "[API] activity-watch/new ERROR");
         return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
     }
 })
