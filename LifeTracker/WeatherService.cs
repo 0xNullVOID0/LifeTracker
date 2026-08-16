@@ -81,6 +81,8 @@ namespace LifeTracker
 
         [JsonPropertyName("airpressure")]
         public float? AirPressure { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; }
     }
 }
 

@@ -37,6 +37,11 @@ namespace LifeTracker.Migrations
                     b.Property<int>("AwID")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
                     b.Property<double>("Duration")
                         .HasColumnType("double precision");
 
@@ -48,6 +53,9 @@ namespace LifeTracker.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("Timestamp")
+                        .IsDescending();
 
                     b.ToTable("ActivityWatchEvents");
                 });
@@ -63,6 +71,11 @@ namespace LifeTracker.Migrations
                     b.Property<float?>("AirPressure")
                         .HasColumnType("real")
                         .HasJsonPropertyName("airpressure");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<float?>("Humidity")
                         .HasColumnType("real")

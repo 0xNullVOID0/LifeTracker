@@ -22,7 +22,8 @@ namespace LifeTracker.Migrations
                     Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Duration = table.Column<double>(type: "double precision", nullable: false),
                     App = table.Column<string>(type: "text", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false)
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
@@ -40,12 +41,19 @@ namespace LifeTracker.Migrations
                     Temperature = table.Column<float>(type: "real", nullable: true),
                     Humidity = table.Column<float>(type: "real", nullable: true),
                     WindspeedBft = table.Column<float>(type: "real", nullable: true),
-                    AirPressure = table.Column<float>(type: "real", nullable: true)
+                    AirPressure = table.Column<float>(type: "real", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WeatherLogs", x => x.ID);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityWatchEvents_Timestamp",
+                table: "ActivityWatchEvents",
+                column: "Timestamp",
+                descending: new bool[0]);
         }
 
         /// <inheritdoc />

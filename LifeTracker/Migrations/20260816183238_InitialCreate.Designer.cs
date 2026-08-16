@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260816010535_InitialCreate")]
+    [Migration("20260816183238_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -40,6 +40,11 @@ namespace LifeTracker.Migrations
                     b.Property<int>("AwID")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
                     b.Property<double>("Duration")
                         .HasColumnType("double precision");
 
@@ -51,6 +56,9 @@ namespace LifeTracker.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("Timestamp")
+                        .IsDescending();
 
                     b.ToTable("ActivityWatchEvents");
                 });
@@ -66,6 +74,11 @@ namespace LifeTracker.Migrations
                     b.Property<float?>("AirPressure")
                         .HasColumnType("real")
                         .HasJsonPropertyName("airpressure");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<float?>("Humidity")
                         .HasColumnType("real")

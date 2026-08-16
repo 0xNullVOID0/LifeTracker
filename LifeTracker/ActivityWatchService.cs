@@ -141,6 +141,7 @@ namespace LifeTracker
         public double Duration { get; set; }
         public string App { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
+        public DateTimeOffset CreatedAt { get; set; }
     }
 
     public class ActivityEventDto
