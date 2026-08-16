@@ -64,24 +64,46 @@ app.MapGet("/buienradar", async (WeatherService weatherService) =>
 })
 .WithName("GetBuienradar");
 
-app.MapGet("/activity-watch", async (ActivityWatchService activityWatchService) =>
+app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchService) =>
 {
-    app.Logger.LogInformation("[API] Route: /activity-watch");
+    app.Logger.LogInformation("[API] Route: /activity-watch/all");
 
     try
     {
-        var activity_data = await activityWatchService.GetBucketEvents();
+        var activity_data = await activityWatchService.FetchBucketEvents();
         return activity_data != null ? Results.Ok(activity_data) : Results.NotFound();
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[API] activity-watch ERROR");
+        Console.WriteLine($"[API] activity-watch/all ERROR");
         Console.WriteLine(ex.ToString());
 
         return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
     }
 })
-.WithName("GetActivityWatch");
+.WithName("FetchAllActivityWatchEvents");
+
+
+
+app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchService) =>
+{
+    app.Logger.LogInformation("[API] Route: /activity-watch/new");
+
+    try
+    {
+        var activity_data = await activityWatchService.FetchNewBucketEvents();
+        return activity_data != null ? Results.Ok(activity_data) : Results.NotFound();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[API] activity-watch/new ERROR");
+        Console.WriteLine(ex.ToString());
+
+        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+    }
+})
+.WithName("FetchNewActivityWatchEvents");
+
 
 
 app.MapGet("/test", async () =>
@@ -96,7 +118,8 @@ app.MapGet("/test", async () =>
 app.Logger.LogInformation("\n\n--------------------------------------------------");
 app.Logger.LogInformation("LifeTracker API started");
 app.Logger.LogInformation("Buienradar endpoint: https://127.0.0.1:5071/buienradar");
-app.Logger.LogInformation("GetActivityWatch endpoint: https://127.0.0.1:5071/activity-watch");
+app.Logger.LogInformation("FetchAllActivityWatchEvents endpoint: https://127.0.0.1:5071/activity-watch/all");
+app.Logger.LogInformation("FetchNewActivityWatchEvents endpoint: https://127.0.0.1:5071/activity-watch/new");
 app.Logger.LogInformation("--------------------------------------------------\n");
 
 app.Run();
