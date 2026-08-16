@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LifeTracker.Configuration;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
 namespace LifeTracker
@@ -7,22 +9,23 @@ namespace LifeTracker
     {
         private readonly HttpClient _httpClient;
         private readonly AppDbContext _context;
+        private readonly ActivityWatchSettings _settings;
 
-        public ActivityWatchService(HttpClient httpclient, AppDbContext context)
+        public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchSettings> settings)
         {
             _httpClient = httpclient;
             _context = context;
+            _settings = settings.Value;
         }
 
         public async Task<List<ActivityEvent>> GetBucketEvents()
         {
-            // TODO make generic instead of hardcoded, use config/env file for proper bucket ID
-            return await GetBucketEvents("aw-watcher-window_X3D");
+            return await GetBucketEvents(_settings.BucketID);
         }
 
         public async Task<List<ActivityEvent>> GetBucketEvents(string bucketID)
         {
-            string url = $"{_httpClient.BaseAddress}{bucketID}/events";
+            string url = $"{_httpClient.BaseAddress}buckets/{bucketID}/events";
 
             // TODO error handling
 

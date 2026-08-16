@@ -1,4 +1,5 @@
 using LifeTracker;
+using LifeTracker.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
@@ -12,13 +13,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddHttpClient<WeatherService>(client => {
-    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar");
-});
-builder.Services.AddHttpClient<ActivityWatchService>(client => {
-    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ActivityWatch");
-});
+builder.Services.AddHttpClient<WeatherService>(client => 
+    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar"));
 
+
+builder.Services.Configure<ActivityWatchSettings>(
+    builder.Configuration.GetSection(ActivityWatchSettings.SectionName));
+
+builder.Services.AddHttpClient<ActivityWatchService>(client =>
+    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ActivityWatch:BaseUrl"));
 
 // get DB credentials and config from appsettings
 var connectionString = builder.Configuration.GetConnectionString("LifeTrackerDB")
