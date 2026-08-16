@@ -11,12 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddHttpClient<WeatherService>(client =>
-{
+builder.Services.AddHttpClient<WeatherService>(client => {
+
+});
+builder.Services.AddHttpClient<ActivityWatchService>(client => {
 
 });
 
 
+// TODO use config/env file for proper credentials usage instead of hardcoded
 var connectionString = "Host=localhost;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword";
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -52,6 +55,25 @@ app.MapGet("/buienradar", async (WeatherService weatherService) =>
 })
 .WithName("GetBuienradar");
 
+app.MapGet("/activity-watch", async (ActivityWatchService activityWatchService) =>
+{
+    app.Logger.LogInformation("[API] Route: /activity-watch");
+
+    try
+    {
+        var activity_data = await activityWatchService.GetBucketEvents();
+        return activity_data != null ? Results.Ok(activity_data) : Results.NotFound();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[API] activity-watch ERROR");
+        Console.WriteLine(ex.ToString());
+
+        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+    }
+})
+.WithName("GetActivityWatch");
+
 
 app.MapGet("/test", async () =>
 {
@@ -66,6 +88,9 @@ app.Logger.LogInformation("\n\n-------------------------------------------------
 app.Logger.LogInformation("LifeTracker API started");
 app.Logger.LogInformation("Buienradar endpoint: http://127.0.0.1:5070/buienradar");
 app.Logger.LogInformation("Buienradar endpoint: https://127.0.0.1:5071/buienradar");
+
+app.Logger.LogInformation("GetActivityWatch endpoint: http://127.0.0.1:5070/activity-watch");
+app.Logger.LogInformation("GetActivityWatch endpoint: https://127.0.0.1:5071/activity-watch");
 app.Logger.LogInformation("--------------------------------------------------\n");
 
 app.Run();
