@@ -23,6 +23,9 @@ builder.Services.Configure<ActivityWatchSettings>(
 builder.Services.AddHttpClient<ActivityWatchService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ActivityWatch:BaseUrl"));
 
+builder.Services.AddHttpClient<GarminBridgeService>(client =>
+    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:GarminConnect"));
+
 // get DB credentials and config from appsettings
 var connectionString = builder.Configuration.GetConnectionString("LifeTrackerDB")
     ?? throw new InvalidOperationException("Connection string 'LifeTrackerDB' not found.");
@@ -97,6 +100,24 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
     }
 })
 .WithName("FetchNewActivityWatchEvents");
+
+
+app.MapGet("/garmin/heartrate", async (GarminBridgeService garminBridgeService) =>
+{
+    app.Logger.LogInformation("[API] Route: /garmin/heartrate");
+
+    try
+    {
+        var heartrate_data = await garminBridgeService.FetchTodaysHeartRate();
+        return heartrate_data != null ? Results.Ok(heartrate_data) : Results.NotFound();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "[API] /garmin/heartrate ERROR");
+        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+    }
+})
+.WithName("FetchTodaysHeartRates");
 
 
 
