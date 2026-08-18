@@ -361,4 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Custom
+/LifeTracker/txt/
 /LifeTracker/Bridges/garmin-bridge/.env

@@ -2,7 +2,7 @@
 using System.Net.Http.Json;
 
 
-namespace LifeTracker
+namespace LifeTracker.Services
 {
     public class WeatherService
     {

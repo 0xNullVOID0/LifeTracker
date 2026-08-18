@@ -1,5 +1,7 @@
 using LifeTracker;
 using LifeTracker.Configuration;
+using LifeTracker.Endpoints;
+using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 
 //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
@@ -85,8 +87,6 @@ app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchServi
     }
 })
 .WithName("FetchAllActivityWatchEvents");
-
-
 
 app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchService) =>
 {

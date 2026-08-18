@@ -4,15 +4,15 @@ using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LifeTracker
+namespace LifeTracker.Services
 {
     public class GarminBridgeService
     {
         private readonly HttpClient _httpClient;
         private readonly AppDbContext _context;
-        private readonly ILogger<ActivityWatchService> _logger;
+        private readonly ILogger<GarminBridgeService> _logger;
 
-        public GarminBridgeService(HttpClient httpclient, AppDbContext context, ILogger<ActivityWatchService> logger)
+        public GarminBridgeService(HttpClient httpclient, AppDbContext context, ILogger<GarminBridgeService> logger)
         {
             _httpClient = httpclient;
             _context = context;
@@ -115,6 +115,7 @@ namespace LifeTracker
         public List<long?[]>? HeartRateValues { get; set; }
     }
 
+    // TOOD rename to DailyStressLevel?
     public class DailyStress
     {
         public int ID { get; set; }

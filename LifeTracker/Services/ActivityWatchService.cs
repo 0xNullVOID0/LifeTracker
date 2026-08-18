@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 
-namespace LifeTracker
+namespace LifeTracker.Services
 {
     public class ActivityWatchService
     {

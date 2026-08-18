@@ -1,4 +1,6 @@
-﻿namespace LifeTracker
+﻿using LifeTracker.Services;
+
+namespace LifeTracker.Endpoints
 {
     public static class GarminEndpoints
     {
@@ -6,7 +8,9 @@
         {
             var group = routes.MapGroup("/garmin").WithTags("Garmin");
 
-            // expects YYYY-MM-dd for date parameter
+            // TODO add proper openAPI documentation
+
+            // optional date parameter expects YYYY-MM-dd format(defaults to today)
             group.MapGet("/heartrate", async (DateOnly? date, GarminBridgeService service) =>
             {
                 var targetDate = date ?? DateOnly.FromDateTime(DateTime.Now);
