@@ -13,9 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// adds standardized JSON error responses
+builder.Services.AddProblemDetails();
+
 builder.Services.AddHttpClient<WeatherService>(client => 
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar"));
-
 
 builder.Services.Configure<ActivityWatchSettings>(
     builder.Configuration.GetSection(ActivityWatchSettings.SectionName));
@@ -43,10 +46,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseDeveloperExceptionPage(); // gives full stack traces for debugging
 }
 
 app.UseHttpsRedirection();
-
+app.MapGarminEndpoints();
 
 app.MapGet("/buienradar", async (WeatherService weatherService) =>
 {
@@ -100,43 +104,6 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
     }
 })
 .WithName("FetchNewActivityWatchEvents");
-
-
-app.MapGet("/garmin/heartrate", async (GarminBridgeService garminBridgeService) =>
-{
-    app.Logger.LogInformation("[API] Route: /garmin/heartrate");
-
-    try
-    {
-        var heartrate_data = await garminBridgeService.FetchTodaysHeartRate();
-        return heartrate_data != null ? Results.Ok(heartrate_data) : Results.NotFound();
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "[API] /garmin/heartrate ERROR");
-        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
-    }
-})
-.WithName("FetchTodaysHeartRates");
-
-
-app.MapGet("/garmin/stress", async (GarminBridgeService garminBridgeService) =>
-{
-    app.Logger.LogInformation("[API] Route: /garmin/stress");
-
-    try
-    {
-        var heartrate_data = await garminBridgeService.FetchTodaysStressLevel();
-        return heartrate_data != null ? Results.Ok(heartrate_data) : Results.NotFound();
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "[API] /garmin/stress ERROR");
-        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
-    }
-})
-.WithName("FetchTodaysStressLevel");
-
 
 
 app.MapGet("/test", async () =>

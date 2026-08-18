@@ -19,9 +19,6 @@ namespace LifeTracker
             _logger = logger;
         }
 
-        public async Task<DailyHeartRate> FetchTodaysHeartRate() =>
-            await FetchHeartRateByDay(DateOnly.FromDateTime(DateTime.Now));
-
         public async Task<DailyHeartRate> FetchHeartRateByDay(DateOnly date)
         {
             // map date to correct format for api
@@ -35,9 +32,6 @@ namespace LifeTracker
             // map DTO to database entity and return it
             return MapToEntity(heart_dto);
         }
-
-        public async Task<DailyStress> FetchTodaysStressLevel() =>
-            await FetchStressLevelByDay(DateOnly.FromDateTime(DateTime.Now));
 
         public async Task<DailyStress> FetchStressLevelByDay(DateOnly date)
         {
