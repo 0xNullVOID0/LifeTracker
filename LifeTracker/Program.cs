@@ -120,6 +120,24 @@ app.MapGet("/garmin/heartrate", async (GarminBridgeService garminBridgeService) 
 .WithName("FetchTodaysHeartRates");
 
 
+app.MapGet("/garmin/stress", async (GarminBridgeService garminBridgeService) =>
+{
+    app.Logger.LogInformation("[API] Route: /garmin/stress");
+
+    try
+    {
+        var heartrate_data = await garminBridgeService.FetchTodaysStressLevel();
+        return heartrate_data != null ? Results.Ok(heartrate_data) : Results.NotFound();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "[API] /garmin/stress ERROR");
+        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+    }
+})
+.WithName("FetchTodaysStressLevel");
+
+
 
 app.MapGet("/test", async () =>
 {
