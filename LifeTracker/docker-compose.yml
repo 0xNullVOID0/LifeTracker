@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16
+    container_name: lifetracker-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: lifetracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - lifetracker_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  lifetracker_pgdata:
