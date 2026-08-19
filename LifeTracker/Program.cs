@@ -24,6 +24,7 @@ builder.Services.AddOpenApi();
 
 // adds standardized JSON error responses
 builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient<WeatherService>(client => 
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar"));
@@ -50,6 +51,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+app.MapHealthChecks("/health");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

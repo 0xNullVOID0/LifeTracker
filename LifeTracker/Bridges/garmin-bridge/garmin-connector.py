@@ -39,18 +39,9 @@ def get_garmin_client() -> Garmin:
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Garmin login failed: {str(e)}")
 
-
-
-@app.get("/garmin/test")
-def test_connection():
-    client = get_garmin_client()
-
-    try:
-        name = client.get_full_name()
-        return { "name": name}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"API call failed: {str(e)}")
-
+@app.get("/garmin/health")
+def health():
+   return {"status": "ok"}
 
 @app.get("/garmin/stress/{date_str}")
 def get_stress(date_str: str):

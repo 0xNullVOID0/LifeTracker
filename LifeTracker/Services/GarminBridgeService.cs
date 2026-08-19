@@ -19,6 +19,11 @@ namespace LifeTracker.Services
             _logger = logger;
         }
 
+        
+
+        public async Task<object?> GarminBridgeHealthCheck() =>
+            await _httpClient.GetFromJsonAsync<object?>("health");
+
         public async Task<DailyHeartRate> FetchHeartRateByDay(DateOnly date)
         {
             // map date to correct format for api

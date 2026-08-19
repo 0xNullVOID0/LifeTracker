@@ -23,6 +23,9 @@ namespace LifeTracker.Endpoints
                 return await service.FetchStressLevelByDay(targetDate) is { } data ? Results.Ok(data) : Results.NotFound();
             }).WithName("FetchStressLevel");
 
+            group.MapGet("/health", async (GarminBridgeService service) =>
+                await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");
+
             return routes;
         }
     }
