@@ -1,4 +1,6 @@
 ﻿using LifeTracker.Configuration;
+using LifeTracker.Entities.Garmin;
+using LifeTracker.Dtos.Garmin;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
@@ -57,6 +59,8 @@ namespace LifeTracker.Services
             await SaveDailyStress(dailyStress);
             return dailyStress;
         }
+
+
 
         // Upserts DailyHeartRate with it's related HeartRateSamples
         public async Task SaveDailyHeartRate(DailyHeartRate dailyHeart)
@@ -155,106 +159,5 @@ namespace LifeTracker.Services
             Max = dto.MaxStressLevel,
         };
     }
-
-
-    public class DailyHeartRate
-    {
-        public DateOnly Date { get; set; } // primary key
-        public int? RestingRate { get; set; }
-        public int? Min { get; set; }
-        public int? Max { get; set; }
-        public List<HeartRateSample> Samples { get; set; } = new();
-        public DateTimeOffset CreatedAt { get; set; }
     }
 
-    public class HeartRateSample
-    {
-        public DateOnly Date { get; set; } // foreign key
-
-        [JsonIgnore] // prevents serialization from jumping back up to the parent entity
-        public DailyHeartRate DailyHeartRate { get; set; } = null!; // navigation property.  TODO check, test possible json serialiser recursion/circular references cause of this
-
-        public DateTimeOffset Timestamp { get; set; }
-        public int Bpm { get; set; }
-        public DateTimeOffset CreatedAt { get; set; }
-    }
-
-    public class DailyHeartRateDto
-    {
-        [JsonPropertyName("calendarDate")]
-        public DateOnly CalendarDate { get; set; }
-
-        [JsonPropertyName("startTimestampGMT")]
-        public DateTime StartTimestampGmt { get; set; }
-
-        [JsonPropertyName("endTimestampGMT")]
-        public DateTime EndTimestampGmt { get; set; }
-
-        [JsonPropertyName("startTimestampLocal")]
-        public DateTime StartTimestampLocal { get; set; }
-
-        [JsonPropertyName("endTimestampLocal")]
-        public DateTime EndTimestampLocal { get; set; }
-
-        [JsonPropertyName("minHeartRate")]
-        public int? MinHeartRate { get; set; }
-
-        [JsonPropertyName("maxHeartRate")]
-        public int? MaxHeartRate { get; set; }
-
-        [JsonPropertyName("restingHeartRate")]
-        public int? RestingHeartRate { get; set; }
-
-        [JsonPropertyName("lastSevenDaysAvgRestingHeartRate")]
-        public int? SevenDaysAvgRestingHeartRate { get; set; }
-
-        [JsonPropertyName("heartRateValues")]
-        public List<long?[]>? HeartRateValues { get; set; }
-    }
-
-    // TOOD rename to DailyStressLevel?
-    public class DailyStress
-    {
-        public DateOnly Date { get; set; } // primary key
-        public int? Average { get; set; }
-        public int? Max { get; set; }
-        public DateTimeOffset CreatedAt { get; set; }
-    }
-
-    public class DailyStressDto
-    {
-        [JsonPropertyName("calendarDate")]
-        public DateOnly CalendarDate { get; set; }
-
-        [JsonPropertyName("startTimestampGMT")]
-        public DateTime StartTimestampGmt { get; set; }
-
-        [JsonPropertyName("endTimestampGMT")]
-        public DateTime EndTimestampGmt { get; set; }
-
-        [JsonPropertyName("startTimestampLocal")]
-        public DateTime StartTimestampLocal { get; set; }
-
-        [JsonPropertyName("endTimestampLocal")]
-        public DateTime EndTimestampLocal { get; set; }
-
-        [JsonPropertyName("maxStressLevel")]
-        public int? MaxStressLevel { get; set; }
-
-        [JsonPropertyName("avgStressLevel")]
-        public int? AvgStressLevel { get; set; }
-
-        [JsonPropertyName("stressChartValueOffset")]
-        public int? StressChartValueOffset { get; set; }
-
-        [JsonPropertyName("stressChartYAxisOrigin")]
-        public int? StressChartYAxisOrigin { get; set; }
-
-        [JsonPropertyName("stressValuesArray")]
-        public List<long?[]>? StressValuesArray { get; set; }
-
-        // uses JsonElement[] because the array contains mixed types (long timestamps, string "MEASURED", ints)
-        [JsonPropertyName("bodyBatteryValuesArray")]
-        public List<JsonElement[]>? BodyBatteryValuesArray { get; set; }
-    }
-}

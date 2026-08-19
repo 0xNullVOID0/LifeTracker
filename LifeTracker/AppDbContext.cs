@@ -1,4 +1,5 @@
-﻿using LifeTracker.Services;
+﻿using LifeTracker.Entities.Garmin;
+using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace LifeTracker

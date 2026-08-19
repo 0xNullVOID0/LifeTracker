@@ -22,6 +22,80 @@ namespace LifeTracker.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRate", b =>
+                {
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int?>("Max")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Min")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RestingRate")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Date");
+
+                    b.ToTable("DailyHeartRate");
+                });
+
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyStress", b =>
+                {
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("Average")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int?>("Max")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Date");
+
+                    b.ToTable("DailyStress");
+                });
+
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSample", b =>
+                {
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Bpm")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<DateOnly>("DailyHeartRateDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("Sleeping")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Date", "Timestamp");
+
+                    b.HasIndex("DailyHeartRateDate");
+
+                    b.ToTable("HeartRateSample");
+                });
+
             modelBuilder.Entity("LifeTracker.Services.ActivityEvent", b =>
                 {
                     b.Property<int>("ID")
@@ -58,80 +132,6 @@ namespace LifeTracker.Migrations
                         .IsDescending();
 
                     b.ToTable("ActivityWatchEvents");
-                });
-
-            modelBuilder.Entity("LifeTracker.Services.DailyHeartRate", b =>
-                {
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<int?>("Max")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Min")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RestingRate")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Date");
-
-                    b.ToTable("DailyHeartRate");
-                });
-
-            modelBuilder.Entity("LifeTracker.Services.DailyStress", b =>
-                {
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<int?>("Average")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<int?>("Max")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Date");
-
-                    b.ToTable("DailyStress");
-                });
-
-            modelBuilder.Entity("LifeTracker.Services.HeartRateSample", b =>
-                {
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Bpm")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<DateOnly>("DailyHeartRateDate")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("Sleeping")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Date", "Timestamp");
-
-                    b.HasIndex("DailyHeartRateDate");
-
-                    b.ToTable("HeartRateSample");
                 });
 
             modelBuilder.Entity("LifeTracker.Services.StationMeasurement", b =>
@@ -177,9 +177,9 @@ namespace LifeTracker.Migrations
                     b.ToTable("WeatherLogs");
                 });
 
-            modelBuilder.Entity("LifeTracker.Services.HeartRateSample", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSample", b =>
                 {
-                    b.HasOne("LifeTracker.Services.DailyHeartRate", "DailyHeartRate")
+                    b.HasOne("LifeTracker.Entities.Garmin.DailyHeartRate", "DailyHeartRate")
                         .WithMany("Samples")
                         .HasForeignKey("DailyHeartRateDate")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -188,7 +188,7 @@ namespace LifeTracker.Migrations
                     b.Navigation("DailyHeartRate");
                 });
 
-            modelBuilder.Entity("LifeTracker.Services.DailyHeartRate", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRate", b =>
                 {
                     b.Navigation("Samples");
                 });
