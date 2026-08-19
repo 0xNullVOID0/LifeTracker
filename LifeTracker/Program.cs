@@ -3,6 +3,7 @@ using LifeTracker.Configuration;
 using LifeTracker.Endpoints;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
 //{
@@ -48,7 +49,15 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference(); // add scalar for automated API documentation & and easy testing
+
     app.UseDeveloperExceptionPage(); // gives full stack traces for debugging
+
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        var url = "https://localhost:5071/scalar";
+        Console.WriteLine($"\n→ Scalar UI: {url}\n");
+    });
 }
 
 app.UseHttpsRedirection();
