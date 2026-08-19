@@ -93,7 +93,9 @@ namespace LifeTracker.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<int?>("Max")
                         .HasColumnType("integer");
@@ -105,7 +107,7 @@ namespace LifeTracker.Migrations
 
             modelBuilder.Entity("LifeTracker.Services.HeartRateSample", b =>
                 {
-                    b.Property<DateOnly>("DailyHeartRateDate")
+                    b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
                     b.Property<DateTimeOffset>("Timestamp")
@@ -119,7 +121,15 @@ namespace LifeTracker.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.HasKey("DailyHeartRateDate", "Timestamp");
+                    b.Property<DateOnly>("DailyHeartRateDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("Sleeping")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Date", "Timestamp");
+
+                    b.HasIndex("DailyHeartRateDate");
 
                     b.ToTable("HeartRateSample");
                 });

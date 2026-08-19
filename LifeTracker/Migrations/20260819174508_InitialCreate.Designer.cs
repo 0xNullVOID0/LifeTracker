@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260819152320_InitialCreate")]
+    [Migration("20260819174508_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -96,7 +96,9 @@ namespace LifeTracker.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<int?>("Max")
                         .HasColumnType("integer");
@@ -108,7 +110,7 @@ namespace LifeTracker.Migrations
 
             modelBuilder.Entity("LifeTracker.Services.HeartRateSample", b =>
                 {
-                    b.Property<DateOnly>("DailyHeartRateDate")
+                    b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
                     b.Property<DateTimeOffset>("Timestamp")
@@ -122,7 +124,15 @@ namespace LifeTracker.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
 
-                    b.HasKey("DailyHeartRateDate", "Timestamp");
+                    b.Property<DateOnly>("DailyHeartRateDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("Sleeping")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Date", "Timestamp");
+
+                    b.HasIndex("DailyHeartRateDate");
 
                     b.ToTable("HeartRateSample");
                 });

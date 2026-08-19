@@ -52,7 +52,7 @@ namespace LifeTracker.Migrations
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     Average = table.Column<int>(type: "integer", nullable: true),
                     Max = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
@@ -82,14 +82,16 @@ namespace LifeTracker.Migrations
                 name: "HeartRateSample",
                 columns: table => new
                 {
-                    DailyHeartRateDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
                     Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    DailyHeartRateDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Bpm = table.Column<int>(type: "integer", nullable: false),
+                    Sleeping = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_HeartRateSample", x => new { x.DailyHeartRateDate, x.Timestamp });
+                    table.PrimaryKey("PK_HeartRateSample", x => new { x.Date, x.Timestamp });
                     table.ForeignKey(
                         name: "FK_HeartRateSample_DailyHeartRate_DailyHeartRateDate",
                         column: x => x.DailyHeartRateDate,
@@ -103,6 +105,11 @@ namespace LifeTracker.Migrations
                 table: "ActivityWatchEvents",
                 column: "Timestamp",
                 descending: new bool[0]);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HeartRateSample_DailyHeartRateDate",
+                table: "HeartRateSample",
+                column: "DailyHeartRateDate");
         }
 
         /// <inheritdoc />

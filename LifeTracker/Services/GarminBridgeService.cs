@@ -46,13 +46,16 @@ namespace LifeTracker.Services
             // map date to correct format for api
             string url = $"stress/{date:yyyy-MM-dd}";
 
-            var stress_dto = await _httpClient.GetFromJsonAsync<DailyStressDto>(url);
+            var stressDto = await _httpClient.GetFromJsonAsync<DailyStressDto>(url);
 
-            if (stress_dto == null)
+            if (stressDto == null)
                 return null;
 
             // map DTO to database entity and return it
-            return MapToEntity(stress_dto);
+            var dailyStress = MapToEntity(stressDto);
+
+            await SaveDailyStress(dailyStress);
+            return dailyStress;
         }
 
         // Upserts DailyHeartRate with it's related HeartRateSamples
@@ -96,6 +99,38 @@ namespace LifeTracker.Services
             }
         }
 
+
+        public async Task SaveDailyStress(DailyStress dailyStress)
+        {
+            if (dailyStress == null)
+                return;
+
+            try
+            {
+                var existing = await _context.DailyStress
+                    .FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
+
+                // Update record if already exists
+                if (existing != null)
+                {
+                    existing.Average = dailyStress.Average;
+                    existing.Max = dailyStress.Max;
+                    // TODO add updatedAt
+                }
+                else
+                {
+                    _context.DailyStress.Add(dailyStress);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex,"Database error occurred while trying to save/update DailyStress for date {Date}.", dailyStress.Date);
+                throw;
+            }
+        }
+
         private static DailyHeartRate MapToEntity(DailyHeartRateDto dto) => new()
         {
             Date = dto.CalendarDate,
@@ -107,7 +142,7 @@ namespace LifeTracker.Services
             Samples = dto.HeartRateValues?.Where(v => v.Length >= 2 && v[0].HasValue && v[1].HasValue)
                 .Select(v => new HeartRateSample
                 {
-                    DailyHeartRateDate = dto.CalendarDate, // foreign Key
+                    Date = dto.CalendarDate, // foreign Key
                     Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(v[0]!.Value),
                     Bpm = (int)v[1]!.Value
                 }).ToList() ?? new List<HeartRateSample>()
@@ -134,7 +169,7 @@ namespace LifeTracker.Services
 
     public class HeartRateSample
     {
-        public DateOnly DailyHeartRateDate { get; set; } // foreign key
+        public DateOnly Date { get; set; } // foreign key
 
         [JsonIgnore] // prevents serialization from jumping back up to the parent entity
         public DailyHeartRate DailyHeartRate { get; set; } = null!; // navigation property.  TODO check, test possible json serialiser recursion/circular references cause of this

@@ -41,6 +41,10 @@ namespace LifeTracker
                 .Property(e => e.CreatedAt)
                 .HasDefaultValueSql("NOW()");
 
+            modelBuilder.Entity<DailyStress>()
+                      .Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("NOW()");
+
 
 
             modelBuilder.Entity<DailyStress>()
@@ -51,7 +55,7 @@ namespace LifeTracker
 
             // composite primary key of foreign key and timestamp preventing duplicate sample timestamps per day
             modelBuilder.Entity<HeartRateSample>()
-                .HasKey(s => new { s.DailyHeartRateDate, s.Timestamp });
+                .HasKey(s => new { s.Date, s.Timestamp });
 
         }
 
