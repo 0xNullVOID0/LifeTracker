@@ -29,8 +29,11 @@ namespace LifeTracker.Services
             if (heart_dto == null)
                 return null;
 
-            // map DTO to database entity and return it
-            return MapToEntity(heart_dto);
+            // map DTO to domain entity, save and return
+            var dailyHeart = MapToEntity(heart_dto);
+            await SaveDailyHeartRate(dailyHeart);
+
+            return dailyHeart;
         }
 
         public async Task<DailyStress> FetchStressLevelByDay(DateOnly date)
@@ -47,6 +50,47 @@ namespace LifeTracker.Services
             return MapToEntity(stress_dto);
         }
 
+        // Upserts DailyHeartRate with it's related HeartRateSamples
+        public async Task SaveDailyHeartRate(DailyHeartRate dailyHeart)
+        {
+            if (dailyHeart == null)
+                return;
+
+            try
+            {
+                // Check if a record already exists for this date, including child samples
+                var existing = await _context.DailyHeartRate
+                    .Include(d => d.Samples)
+                    .FirstOrDefaultAsync(d => d.Date == dailyHeart.Date);
+
+                if (existing != null)
+                {
+                    // Update summary properties
+                    existing.RestingRate = dailyHeart.RestingRate;
+                    existing.Min = dailyHeart.Min;
+                    existing.Max = dailyHeart.Max;
+
+                    // Delete old samples from the context to prevent orphaned records/foreign key conflicts
+                    _context.HeartRateSample.RemoveRange(existing.Samples);
+
+                    // Attach the new sample list
+                    existing.Samples = dailyHeart.Samples;
+                }
+                else
+                {
+                    // Insert new entity along with its samples
+                    _context.DailyHeartRate.Add(dailyHeart);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error occurred while trying to save/update DailyHeartRate for date {Date}.", dailyHeart.Date);
+                throw;
+            }
+        }
+
         private static DailyHeartRate MapToEntity(DailyHeartRateDto dto) => new()
         {
             Date = dto.CalendarDate,
@@ -54,6 +98,15 @@ namespace LifeTracker.Services
             RestingRate = dto.RestingHeartRate,
             Min = dto.MinHeartRate, 
             Max = dto.MaxHeartRate,
+
+            // Convert the raw timestamp/BPM array pairs into HeartRateSample entities with a relation to the DailyHeartRate by date as FK
+            Samples = dto.HeartRateValues?.Where(v => v.Length >= 2 && v[0].HasValue && v[1].HasValue)
+                .Select(v => new HeartRateSample
+                {
+                    DailyHeartRateDate = dto.CalendarDate, // foreign Key
+                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(v[0]!.Value),
+                    Bpm = (int)v[1]!.Value
+                }).ToList() ?? new List<HeartRateSample>()
         };
 
         private static DailyStress MapToEntity(DailyStressDto dto) => new()
@@ -68,17 +121,25 @@ namespace LifeTracker.Services
 
     public class DailyHeartRate
     {
-        public int ID { get; set; }
-
-        public DateOnly Date { get; set; }
-        public List<long?[]>? Values { get; set; }
-
+        public DateOnly Date { get; set; } // primary key
         public int? RestingRate { get; set; }
 
         public int? Min { get; set; }
 
         public int? Max { get; set; }
+        public List<HeartRateSample> Samples { get; set; } = new();
+        public DateTimeOffset CreatedAt { get; set; }
+    }
 
+    public class HeartRateSample
+    {
+        public DateOnly DailyHeartRateDate { get; set; } // foreign key
+
+        [JsonIgnore] // prevents serialization from jumping back up to the parent entity
+        public DailyHeartRate DailyHeartRate { get; set; } = null!; // navigation property.  TODO check, test possible json serialiser recursion/circular references cause of this
+
+        public DateTimeOffset Timestamp { get; set; }
+        public int Bpm { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
     }
 
@@ -118,11 +179,7 @@ namespace LifeTracker.Services
     // TOOD rename to DailyStressLevel?
     public class DailyStress
     {
-        public int ID { get; set; }
-
-        public DateOnly Date { get; set; }
-        public List<long?[]>? Values { get; set; }
-
+        public DateOnly Date { get; set; } // primary key
         public int? Average { get; set; }
 
         public int? Max { get; set; }

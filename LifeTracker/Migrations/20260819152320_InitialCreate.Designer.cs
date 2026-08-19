@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260816183238_InitialCreate")]
+    [Migration("20260819152320_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace LifeTracker.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("LifeTracker.ActivityEvent", b =>
+            modelBuilder.Entity("LifeTracker.Services.ActivityEvent", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -63,7 +63,71 @@ namespace LifeTracker.Migrations
                     b.ToTable("ActivityWatchEvents");
                 });
 
-            modelBuilder.Entity("LifeTracker.StationMeasurement", b =>
+            modelBuilder.Entity("LifeTracker.Services.DailyHeartRate", b =>
+                {
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int?>("Max")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Min")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RestingRate")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Date");
+
+                    b.ToTable("DailyHeartRate");
+                });
+
+            modelBuilder.Entity("LifeTracker.Services.DailyStress", b =>
+                {
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("Average")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Max")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Date");
+
+                    b.ToTable("DailyStress");
+                });
+
+            modelBuilder.Entity("LifeTracker.Services.HeartRateSample", b =>
+                {
+                    b.Property<DateOnly>("DailyHeartRateDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Bpm")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("DailyHeartRateDate", "Timestamp");
+
+                    b.ToTable("HeartRateSample");
+                });
+
+            modelBuilder.Entity("LifeTracker.Services.StationMeasurement", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -104,6 +168,22 @@ namespace LifeTracker.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("WeatherLogs");
+                });
+
+            modelBuilder.Entity("LifeTracker.Services.HeartRateSample", b =>
+                {
+                    b.HasOne("LifeTracker.Services.DailyHeartRate", "DailyHeartRate")
+                        .WithMany("Samples")
+                        .HasForeignKey("DailyHeartRateDate")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DailyHeartRate");
+                });
+
+            modelBuilder.Entity("LifeTracker.Services.DailyHeartRate", b =>
+                {
+                    b.Navigation("Samples");
                 });
 #pragma warning restore 612, 618
         }
