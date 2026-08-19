@@ -363,5 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Custom
+/LifeTracker/logs/
 /LifeTracker/txt/
 /LifeTracker/Bridges/garmin-bridge/.env

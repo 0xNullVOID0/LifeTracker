@@ -1,9 +1,11 @@
 using LifeTracker;
 using LifeTracker.Configuration;
 using LifeTracker.Endpoints;
+using LifeTracker.Middleware;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using Serilog;
 
 //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
 //{
@@ -12,6 +14,9 @@ using Scalar.AspNetCore;
 //};
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, config) =>
+    config.ReadFrom.Configuration(context.Configuration).Enrich.FromLogContext());
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -61,7 +66,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapGarminEndpoints();
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapGet("/buienradar", async (WeatherService weatherService) =>
 {
