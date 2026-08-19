@@ -122,20 +122,8 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
 .WithName("FetchNewActivityWatchEvents");
 
 
-app.MapGet("/test", async () =>
-{
-    app.Logger.LogInformation("[API] Route: /test");
-    Console.WriteLine($"TEST TEST");
-})
-.WithName("test");
-
-
-
 app.Logger.LogInformation("\n\n--------------------------------------------------");
 app.Logger.LogInformation("LifeTracker API started");
-app.Logger.LogInformation("Buienradar endpoint: https://127.0.0.1:5071/buienradar");
-app.Logger.LogInformation("FetchAllActivityWatchEvents endpoint: https://127.0.0.1:5071/activity-watch/all");
-app.Logger.LogInformation("FetchNewActivityWatchEvents endpoint: https://127.0.0.1:5071/activity-watch/new");
 app.Logger.LogInformation("--------------------------------------------------\n");
 
 app.Run();

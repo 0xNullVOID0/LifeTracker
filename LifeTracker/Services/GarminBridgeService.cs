@@ -99,7 +99,6 @@ namespace LifeTracker.Services
         private static DailyHeartRate MapToEntity(DailyHeartRateDto dto) => new()
         {
             Date = dto.CalendarDate,
-            Values = dto.HeartRateValues,
             RestingRate = dto.RestingHeartRate,
             Min = dto.MinHeartRate, 
             Max = dto.MaxHeartRate,
@@ -117,7 +116,6 @@ namespace LifeTracker.Services
         private static DailyStress MapToEntity(DailyStressDto dto) => new()
         {
             Date = dto.CalendarDate,
-            Values = dto.StressValuesArray,
             Average = dto.AvgStressLevel,
             Max = dto.MaxStressLevel,
         };
@@ -128,9 +126,7 @@ namespace LifeTracker.Services
     {
         public DateOnly Date { get; set; } // primary key
         public int? RestingRate { get; set; }
-
         public int? Min { get; set; }
-
         public int? Max { get; set; }
         public List<HeartRateSample> Samples { get; set; } = new();
         public DateTimeOffset CreatedAt { get; set; }
@@ -186,9 +182,7 @@ namespace LifeTracker.Services
     {
         public DateOnly Date { get; set; } // primary key
         public int? Average { get; set; }
-
         public int? Max { get; set; }
-
         public DateTimeOffset CreatedAt { get; set; }
     }
 
