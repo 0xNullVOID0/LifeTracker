@@ -1,4 +1,5 @@
-﻿using LifeTracker.Entities.Garmin;
+﻿using LifeTracker.Entities.ActivityWatch;
+using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 

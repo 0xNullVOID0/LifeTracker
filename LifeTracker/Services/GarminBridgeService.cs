@@ -1,6 +1,7 @@
 ﻿using LifeTracker.Configuration;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Dtos.Garmin;
+using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.Json;

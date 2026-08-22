@@ -1,4 +1,6 @@
 ﻿using LifeTracker.Configuration;
+using LifeTracker.Dtos.ActivityWatch;
+using LifeTracker.Entities.ActivityWatch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
@@ -128,43 +130,5 @@ namespace LifeTracker.Services
             App = dto.Data.App ?? string.Empty,
             Title = dto.Data.Title ?? string.Empty
         };
-    }
-
-
-
-    public class ActivityEvent
-    {
-        public int ID { get; set; }
-
-        public int AwID { get; set; }
-        public DateTime Timestamp { get; set; }
-        public double Duration { get; set; }
-        public string App { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public DateTimeOffset CreatedAt { get; set; }
-    }
-
-    public class ActivityEventDto
-    {
-        [JsonPropertyName("id")]
-        public int ID { get; set; }
-
-        [JsonPropertyName("timestamp")]
-        public DateTime Timestamp { get; set; }
-
-        [JsonPropertyName("duration")]
-        public double Duration { get; set; }
-
-        [JsonPropertyName("data")]
-        public EventDataDto Data { get; set; } = new();
-    }
-
-    public class EventDataDto
-    {
-        [JsonPropertyName("app")]
-        public string App { get; set; } = string.Empty;
-
-        [JsonPropertyName("title")]
-        public string Title { get; set; } = string.Empty;
     }
 }
