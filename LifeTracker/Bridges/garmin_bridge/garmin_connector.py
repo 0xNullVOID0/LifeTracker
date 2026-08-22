@@ -2,7 +2,7 @@
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import date
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Response
 from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
 
 load_dotenv()
@@ -43,15 +43,58 @@ def get_garmin_client() -> Garmin:
 def health():
    return {"status": "ok"}
 
-@app.get("/garmin/stress/{date_str}")
-def get_stress(date_str: str):
-    target_date = date.today().isoformat() if date_str == "today" else date_str
-    client = get_garmin_client()
-    return client.get_stress_data(target_date)
+def resolve_date(date_str: str | None) -> date:
+    """None → today. Reject future dates with 404."""
+    target = date.today() if date_str is None else date.fromisoformat(date_str)
+    if target > date.today():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No data for future date {target.isoformat()}",
+        )
+    return target
 
 
-@app.get("/garmin/heartrate/{date_str}")
-def get_heart_rate(date_str: str):
-    target_date = date.today().isoformat() if date_str == "today" else date_str
+@app.get("/garmin/stress")
+def get_stress(
+    response: Response,
+    date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+):
+    target = resolve_date(date_str)
     client = get_garmin_client()
-    return client.get_heart_rates(target_date)
+    data = client.get_stress_data(target.isoformat())
+
+    if not data or not data.get("startTimestampGMT"):
+        response.status_code = 204
+        return None
+    return data
+
+
+@app.get("/garmin/heartrate")
+def get_heart_rate(
+    response: Response,
+    date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+):
+    target = resolve_date(date_str)
+    client = get_garmin_client()
+    data = client.get_heart_rates(target.isoformat())
+
+    if not data or not data.get("startTimestampGMT"):
+        response.status_code = 204
+        return None
+    return data
+
+
+@app.get("/garmin/sleep")
+def get_sleep(
+    response: Response,
+    date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+):
+    target = resolve_date(date_str)
+    client = get_garmin_client()
+    data = client.get_sleep_data(target.isoformat())
+
+    daily = (data or {}).get("dailySleepDTO") or {}
+    if not data or daily.get("sleepTimeSeconds") is None:
+        response.status_code = 204
+        return None
+    return data

@@ -22,41 +22,42 @@ namespace LifeTracker.Services
             _logger = logger;
         }
 
-        
-
         public async Task<object?> GarminBridgeHealthCheck() =>
             await _httpClient.GetFromJsonAsync<object?>("health");
 
-        public async Task<DailyHeartRate> FetchHeartRateByDay(DateOnly date)
+        private async Task<T?> GetFromBridgeAsync<T>(string endpoint, DateOnly date)
         {
-            // map date to correct format for api
-            string url = $"heartrate/{date:yyyy-MM-dd}";
+            var url = $"{endpoint}?date={date:yyyy-MM-dd}";
+            using var response = await _httpClient.GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
 
-            var heart_dto = await _httpClient.GetFromJsonAsync<DailyHeartRateDto>(url);
+            if (response.StatusCode is System.Net.HttpStatusCode.NoContent   // 204 empty
+                                    or System.Net.HttpStatusCode.NotFound)   // 404 future
+                return default;
 
-            if (heart_dto == null)
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Python Garmin Bridge error {(int)response.StatusCode} for {url}");
+
+            return await response.Content.ReadFromJsonAsync<T>(); // deserialize the response's body to type T
+        }
+
+        public async Task<DailyHeartRate?> FetchHeartRateByDay(DateOnly date)
+        {
+            var heartDto = await GetFromBridgeAsync<DailyHeartRateDto>("heartrate", date);
+            if (heartDto is null)
                 return null;
 
-            // map DTO to domain entity, save and return
-            var dailyHeart = MapToEntity(heart_dto);
+            var dailyHeart = MapToEntity(heartDto);
             await SaveDailyHeartRate(dailyHeart);
-
             return dailyHeart;
         }
 
-        public async Task<DailyStress> FetchStressLevelByDay(DateOnly date)
+        public async Task<DailyStress?> FetchStressLevelByDay(DateOnly date)
         {
-            // map date to correct format for api
-            string url = $"stress/{date:yyyy-MM-dd}";
-
-            var stressDto = await _httpClient.GetFromJsonAsync<DailyStressDto>(url);
-
-            if (stressDto == null)
+            var stressDto = await GetFromBridgeAsync<DailyStressDto>("stress", date);
+            if (stressDto is null)
                 return null;
 
-            // map DTO to database entity and return it
             var dailyStress = MapToEntity(stressDto);
-
             await SaveDailyStress(dailyStress);
             return dailyStress;
         }
@@ -71,7 +72,7 @@ namespace LifeTracker.Services
 
             try
             {
-                // Check if a record already exists for this date, including child samples
+                // Check if a record already exists for this date including possible child HeartRateSamples
                 var existing = await _context.DailyHeartRate
                     .Include(d => d.Samples)
                     .FirstOrDefaultAsync(d => d.Date == dailyHeart.Date);
@@ -112,8 +113,7 @@ namespace LifeTracker.Services
 
             try
             {
-                var existing = await _context.DailyStress
-                    .FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
+                var existing = await _context.DailyStress.FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
 
                 // Update record if already exists
                 if (existing != null)

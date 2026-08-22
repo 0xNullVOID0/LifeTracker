@@ -10,18 +10,50 @@ namespace LifeTracker.Endpoints
 
             // TODO add proper openAPI documentation
 
+            static bool IsFuture(DateOnly date) =>
+                date > DateOnly.FromDateTime(DateTime.Today);
+
+            static IResult? ValidateDate(DateOnly? date, out DateOnly targetDate)
+            {
+                targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+                if (IsFuture(targetDate))
+                    return Results.BadRequest(new { error = "Cannot request non existent data from future dates." });
+                return null; // means OK(no errors found)
+            }
+
+            static IResult OkOrNoContent<T>(T? data) =>
+                data is not null ? Results.Ok(data) : Results.NoContent();
+
             // optional date parameter expects YYYY-MM-dd format(defaults to today)
             group.MapGet("/heartrate", async (DateOnly? date, GarminBridgeService service) =>
             {
-                var targetDate = date ?? DateOnly.FromDateTime(DateTime.Now);
-                return await service.FetchHeartRateByDay(targetDate) is { } data ? Results.Ok(data) : Results.NotFound();
-            }).WithName("FetchHeartRate");
+                if (ValidateDate(date, out var targetDate) is { } error)
+                    return error;
+
+                var data = await service.FetchHeartRateByDay(targetDate);
+                return OkOrNoContent(data);
+            })
+            .WithName("FetchHeartRate");
 
             group.MapGet("/stress", async (DateOnly? date, GarminBridgeService service) =>
             {
-                var targetDate = date ?? DateOnly.FromDateTime(DateTime.Now);
-                return await service.FetchStressLevelByDay(targetDate) is { } data ? Results.Ok(data) : Results.NotFound();
-            }).WithName("FetchStressLevel");
+                if (ValidateDate(date, out var targetDate) is { } error)
+                    return error;
+
+                var data = await service.FetchStressLevelByDay(targetDate);
+                return OkOrNoContent(data);
+            })
+            .WithName("FetchStressLevel");
+
+            group.MapGet("/sleep", async (DateOnly? date, GarminBridgeService service) =>
+            {
+                if (ValidateDate(date, out var targetDate) is { } error)
+                    return error;
+
+                var data = await service.FetchSleepByDay(targetDate);
+                return OkOrNoContent(data);
+            })
+            .WithName("FetchSleep");
 
             group.MapGet("/health", async (GarminBridgeService service) =>
                 await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");
