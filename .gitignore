@@ -365,4 +365,4 @@ FodyWeavers.xsd
 # Custom
 /LifeTracker/logs/
 /LifeTracker/txt/
-/LifeTracker/Bridges/garmin-bridge/.env
+/LifeTracker/Bridges/garmin_bridge/.env

@@ -9,7 +9,7 @@ load_dotenv()
 
 app = FastAPI(title="Garmin Connect Bridge")
 
-TOKEN_DIR = Path.home() / ".garminconnect"
+TOKEN_DIR = Path(os.getenv("GARMIN_TOKEN_DIR", str(Path.home() / ".garminconnect")))
 TOKEN_DIR.mkdir(exist_ok=True)
 
 

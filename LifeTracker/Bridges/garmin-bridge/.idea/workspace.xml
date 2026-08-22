@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="1f05d93a-78c6-4cc3-92fe-39f5322a82d2" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../LifeTracker.slnx" beforeDir="false" afterPath="$PROJECT_DIR$/../../../LifeTracker.slnx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../AppDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/../garmin_bridge/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/garmin-connector.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../garmin_bridge/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../garmin_bridge/uv.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Endpoints/GarminEndpoints.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../Endpoints/GarminEndpoints.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Entities/ActivityWatch/ActivityEvent.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../Entities/ActivityWatch/ActivityEvent.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Entities/Garmin/HeartRateSample.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../Entities/Garmin/HeartRateSample.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../LifeTracker.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../../LifeTracker.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Middleware/RequestLoggingMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../Middleware/RequestLoggingMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Migrations/20260819191519_InitialCreate.Designer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Migrations/20260819191519_InitialCreate.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Services/GarminBridgeService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../Services/GarminBridgeService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Services/WeatherService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../Services/WeatherService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../../docker-compose.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 8,
+  "fromUser": false
+}]]></component>
+  <component name="ProjectId" id="3IHSjb3KrsIJvoxGsHuMEHoeFVo" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="false" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/fresh/source/repos/LifeTracker/LifeTracker/Bridges/garmin-bridge"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-c59985aa861c-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.24374.152" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1f05d93a-78c6-4cc3-92fe-39f5322a82d2" name="Changes" comment="" />
+      <created>1787420136336</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1787420136336</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
