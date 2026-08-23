@@ -9,6 +9,7 @@ namespace LifeTracker.Endpoints
             var group = routes.MapGroup("/garmin").WithTags("Garmin");
 
             // TODO add proper openAPI documentation
+            // TODO cancellation tokens?
 
             static bool IsFuture(DateOnly date) =>
                 date > DateOnly.FromDateTime(DateTime.Today);
@@ -32,8 +33,7 @@ namespace LifeTracker.Endpoints
 
                 var data = await service.FetchHeartRateByDay(targetDate);
                 return OkOrNoContent(data);
-            })
-            .WithName("FetchHeartRate");
+            }).WithName("FetchHeartRate");
 
             group.MapGet("/stress", async (DateOnly? date, GarminBridgeService service) =>
             {
@@ -42,8 +42,7 @@ namespace LifeTracker.Endpoints
 
                 var data = await service.FetchStressLevelByDay(targetDate);
                 return OkOrNoContent(data);
-            })
-            .WithName("FetchStressLevel");
+            }).WithName("FetchStressLevel");
 
             group.MapGet("/sleep", async (DateOnly? date, GarminBridgeService service) =>
             {
@@ -54,6 +53,14 @@ namespace LifeTracker.Endpoints
                 return OkOrNoContent(data);
             })
             .WithName("FetchSleep");
+            group.MapGet("/sync/all", async (DateOnly? date, GarminBridgeService service) =>
+            {
+                if (ValidateDate(date, out var targetDate) is { } error)
+                    return error;
+
+                var data = await service.SyncAllDataByDay(targetDate);
+                return OkOrNoContent(data);
+            }).WithName("SyncAllData");
 
             group.MapGet("/health", async (GarminBridgeService service) =>
                 await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");

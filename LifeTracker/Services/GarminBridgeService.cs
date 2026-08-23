@@ -1,11 +1,7 @@
-﻿using LifeTracker.Configuration;
-using LifeTracker.Entities.Garmin;
+﻿using System.Text.Json;
 using LifeTracker.Dtos.Garmin;
 using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace LifeTracker.Services
 {
@@ -38,6 +34,17 @@ namespace LifeTracker.Services
                 throw new HttpRequestException($"Python Garmin Bridge error {(int)response.StatusCode} for {url}");
 
             return await response.Content.ReadFromJsonAsync<T>(); // deserialize the response's body to type T
+        }
+
+        // TODO rename all to sync?
+        // Syncs all Garmin data from the official API via the python GarminConnect bridge to the DB
+        public async Task<IResult> SyncAllDataByDay(DateOnly date)
+        {
+            var heart = await FetchHeartRateByDay(date);
+            var stress = await FetchStressLevelByDay(date);
+            var sleep = await FetchSleepByDay(date);
+
+            return Results.Ok(new { heart, stress, sleep });
         }
 
         public async Task<DailyHeartRate?> FetchHeartRateByDay(DateOnly date)
