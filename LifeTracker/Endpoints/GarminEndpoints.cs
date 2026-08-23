@@ -32,7 +32,7 @@ namespace LifeTracker.Endpoints
                 if (ValidateDate(date, out var targetDate) is { } error)
                     return error;
 
-                var data = await service.FetchHeartRateByDay(targetDate);
+                var data = await service.SyncHeartRateByDay(targetDate);
                 return OkOrNoContent(data);
             }).WithName("FetchHeartRate");
 
@@ -41,7 +41,7 @@ namespace LifeTracker.Endpoints
                 if (ValidateDate(date, out var targetDate) is { } error)
                     return error;
 
-                var data = await service.FetchStressLevelByDay(targetDate);
+                var data = await service.SyncStressLevelByDay(targetDate);
                 return OkOrNoContent(data);
             }).WithName("FetchStressLevel");
 
@@ -50,7 +50,7 @@ namespace LifeTracker.Endpoints
                 if (ValidateDate(date, out var targetDate) is { } error)
                     return error;
 
-                var data = await service.FetchSleepByDay(targetDate);
+                var data = await service.SyncSleepByDay(targetDate);
                 return OkOrNoContent(data);
             }).WithName("FetchSleep");
 
@@ -70,7 +70,7 @@ namespace LifeTracker.Endpoints
 
                 var data = await service.SyncAllDataByDay(targetDate);
                 return OkOrNoContent(data);
-            }).WithName("SyncAllData");
+            }).WithName("SyncAllDataByDay");
 
             group.MapGet("/health", async (GarminBridgeService service) =>
                 await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");

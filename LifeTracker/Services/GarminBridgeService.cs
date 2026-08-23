@@ -49,18 +49,17 @@ namespace LifeTracker.Services
             return Results.Ok(new { heart, stress, sleep });
         }
 
-        // TODO rename all to sync?
-        // Syncs all Garmin data from the official API via the python GarminConnect bridge to the DB
+        // Syncs all Garmin data from the official API via the python GarminConnect bridge and upserts into DB
         public async Task<IResult> SyncAllDataByDay(DateOnly date)
         {
-            var heart = await FetchHeartRateByDay(date);
-            var stress = await FetchStressLevelByDay(date);
-            var sleep = await FetchSleepByDay(date);
+            var heart = await SyncHeartRateByDay(date);
+            var stress = await SyncStressLevelByDay(date);
+            var sleep = await SyncSleepByDay(date);
 
             return Results.Ok(new { heart, stress, sleep });
         }
 
-        public async Task<DailyHeartRate?> FetchHeartRateByDay(DateOnly date)
+        public async Task<DailyHeartRate?> SyncHeartRateByDay(DateOnly date)
         {
             var heartDto = await GetFromBridgeAsync<DailyHeartRateDto>("heartrate", date);
             if (heartDto is null)
@@ -71,7 +70,7 @@ namespace LifeTracker.Services
             return dailyHeart;
         }
 
-        public async Task<DailyStress?> FetchStressLevelByDay(DateOnly date)
+        public async Task<DailyStress?> SyncStressLevelByDay(DateOnly date)
         {
             var stressDto = await GetFromBridgeAsync<DailyStressDto>("stress", date);
             if (stressDto is null)
