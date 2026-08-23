@@ -11,6 +11,7 @@ namespace LifeTracker.Endpoints
             // TODO add proper openAPI documentation
             // TODO cancellation tokens?
 
+
             static bool IsFuture(DateOnly date) =>
                 date > DateOnly.FromDateTime(DateTime.Today);
 
@@ -51,8 +52,17 @@ namespace LifeTracker.Endpoints
 
                 var data = await service.FetchSleepByDay(targetDate);
                 return OkOrNoContent(data);
-            })
-            .WithName("FetchSleep");
+            }).WithName("FetchSleep");
+
+            group.MapGet("/day", async (DateOnly? date, GarminBridgeService service) =>
+            {
+                if (ValidateDate(date, out var targetDate) is { } error)
+                    return error;
+
+                var data = await service.GetAllDataByDay(targetDate);
+                return OkOrNoContent(data);
+            }).WithName("GetAllDataByDay");
+
             group.MapGet("/sync/all", async (DateOnly? date, GarminBridgeService service) =>
             {
                 if (ValidateDate(date, out var targetDate) is { } error)

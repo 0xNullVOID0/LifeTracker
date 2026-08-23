@@ -36,6 +36,19 @@ namespace LifeTracker.Services
             return await response.Content.ReadFromJsonAsync<T>(); // deserialize the response's body to type T
         }
 
+        // Gets all Garmin data from DB by date
+        public async Task<IResult> GetAllDataByDay(DateOnly date)
+        {
+            var heart = await _context.DailyHeartRate.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
+            var stress = await _context.DailyStress.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+            var sleep = await _context.DailySleep.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+
+            if (heart is null && stress is null && sleep is null)
+                return Results.NoContent();
+
+            return Results.Ok(new { heart, stress, sleep });
+        }
+
         // TODO rename all to sync?
         // Syncs all Garmin data from the official API via the python GarminConnect bridge to the DB
         public async Task<IResult> SyncAllDataByDay(DateOnly date)
