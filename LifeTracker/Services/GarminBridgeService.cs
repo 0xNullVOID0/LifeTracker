@@ -21,6 +21,7 @@ namespace LifeTracker.Services
         public async Task<object?> GarminBridgeHealthCheck() =>
             await _httpClient.GetFromJsonAsync<object?>("health");
 
+        // TODO add polly
         private async Task<T?> GetFromBridgeAsync<T>(string endpoint, DateOnly date)
         {
             var url = $"{endpoint}?date={date:yyyy-MM-dd}";
@@ -36,7 +37,12 @@ namespace LifeTracker.Services
             return await response.Content.ReadFromJsonAsync<T>(); // deserialize the response's body to type T
         }
 
+
+        public async Task<DailySleep?> GetSleepByDay(DateOnly date) =>
+            await _context.DailySleep.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+
         // Gets all Garmin data from DB by date
+        // TODO proper combined entity project for a days worth of data?
         public async Task<IResult> GetAllDataByDay(DateOnly date)
         {
             var heart = await _context.DailyHeartRate.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
@@ -81,6 +87,17 @@ namespace LifeTracker.Services
             return dailyStress;
         }
 
+        // TODO function, cron for getting all backlog data, a first time profile setup to get all available data history, possible rate limit stuff 
+        public async Task<DailySleep?> SyncSleepByDay(DateOnly date)
+        {
+            var sleepDto = await GetFromBridgeAsync<SleepResponseDto>("sleep", date);
+            if (sleepDto is null)
+                return null;
+
+            var dailySleep = MapToEntity(sleepDto);
+            await SaveDailySleep(dailySleep, sleepDto.SleepHeartRate);
+            return dailySleep;
+        }
 
 
         // Upserts DailyHeartRate with it's related HeartRateSamples
@@ -120,6 +137,87 @@ namespace LifeTracker.Services
             catch (DbUpdateException ex)
             {
                 _logger.LogError(ex, "Database error occurred while trying to save/update DailyHeartRate for date {Date}.", dailyHeart.Date);
+                throw;
+            }
+        }
+
+        // TODO proper handling of same timestamp data, either all local or all gmt, 
+
+        // Upserts DailySleep with it's related HeartRateSamples
+        public async Task SaveDailySleep(DailySleep dailySleep, List<GarminTimeSampleDto> heartRates)
+        {
+            if (dailySleep is null)
+                return;
+
+            DateOnly date = dailySleep.Date;
+
+            try
+            {
+                var existing = await _context.DailySleep.FirstOrDefaultAsync(x => x.Date == date);
+
+                // TODO handle multiple sleep per day, checkout naps too 
+                // update existing values
+                if (existing is not null)
+                {
+                    existing.SleepTimeSeconds = dailySleep.SleepTimeSeconds;
+                    existing.DeepSleepSeconds = dailySleep.DeepSleepSeconds;
+                    existing.LightSleepSeconds = dailySleep.LightSleepSeconds;
+                    existing.RemSleepSeconds = dailySleep.RemSleepSeconds;
+                    existing.AwakeSleepSeconds = dailySleep.AwakeSleepSeconds;
+                    existing.AvgSleepStress = dailySleep.AvgSleepStress;
+                    existing.AvgHeartRate = dailySleep.AvgHeartRate;
+                    //existing.RestingHeartRate = dailySleep.RestingHeartRate;
+                    //existing.AvgOvernightHrv = dailySleep.AvgOvernightHrv;
+                }
+                else
+                {
+                    _context.DailySleep.Add(dailySleep);
+                }
+
+                // map incoming DTOs into a lookup dictionary by timestamp
+                var incomingSamples = heartRates?.ToDictionary(
+                    v => DateTimeOffset.FromUnixTimeMilliseconds(v.StartGmt), //TODO timezones
+                    v => v.Value
+                ) ?? new Dictionary<DateTimeOffset, int>();
+
+                if (incomingSamples.Count > 0)
+                {
+                    var timestamps = incomingSamples.Keys.ToList();
+
+                    // find any existing HeartRateSamples in DB by timestamp
+                    var existingSamples = await _context.HeartRateSample
+                        .Where(s => s.Date == date && timestamps.Contains(s.Timestamp))
+                        .ToListAsync();
+
+                    // update and mark existing records as sleeping
+                    foreach (var sample in existingSamples)
+                    {
+                        sample.Sleeping = true;
+                        incomingSamples.Remove(sample.Timestamp); // remove rows we updated from sleep heartrate samples, probably unneccsary but better safe than sorry for now
+                    }
+
+                    // TODO probably unneccsary since heart rate already gets the same by default?
+                    // create new HeartRateSamples for the ones that werent already in DB
+                    var newSamples = incomingSamples.Select(kvp => new HeartRateSample
+                    {
+                        Date = date,
+                        Timestamp = kvp.Key,
+                        BPM = kvp.Value,
+                        Sleeping = true
+                    }).ToList();
+
+                    if (newSamples.Count > 0)
+                    {
+                        // TODO if dailyheartrate for given date doesnt exist "yet" while fetching sleep for that date first we get error so always fetch dailyheart first but still catch error evne though it prob would never happen with how data would properly be fetched in order with normal use
+                        _context.HeartRateSample.AddRange(newSamples);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error saving DailySleep for {Date}", dailySleep.Date);
                 throw;
             }
         }
@@ -178,6 +276,25 @@ namespace LifeTracker.Services
             Average = dto.AvgStressLevel,
             Max = dto.MaxStressLevel,
         };
+
+        private static DailySleep MapToEntity(SleepResponseDto dto)
+        {
+            var d = dto.DailySleep;
+            var date = d.CalendarDate;
+
+            return new DailySleep
+            {
+                Date = date,
+                SleepTimeSeconds = d.SleepTimeSeconds,
+                DeepSleepSeconds = d.DeepSleepSeconds,
+                LightSleepSeconds = d.LightSleepSeconds,
+                RemSleepSeconds = d.RemSleepSeconds,
+                AwakeSleepSeconds = d.AwakeSleepSeconds,
+                AvgHeartRate = d.AvgHeartRate,
+                AvgSleepStress = d.AvgSleepStress
+            };
+    }
+
     }
     }
 

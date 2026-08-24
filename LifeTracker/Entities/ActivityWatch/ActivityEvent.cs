@@ -3,7 +3,6 @@
     public class ActivityEvent
     {
         public int ID { get; set; }
-
         public int AwID { get; set; }
         public DateTime Timestamp { get; set; }
         public double Duration { get; set; }

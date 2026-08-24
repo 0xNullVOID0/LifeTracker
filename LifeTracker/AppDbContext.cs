@@ -14,8 +14,9 @@ namespace LifeTracker
         public DbSet<HeartRateSample> HeartRateSample { get; set; }
         public DbSet<DailyHeartRate> DailyHeartRate { get; set; }
         public DbSet<DailyStress> DailyStress { get; set; }
+        public DbSet<DailySleep> DailySleep { get; set; }
 
-
+        // TODO proper db health checks, checking if schemas are properly setup even if db is running can still fail if schema is not setup properly
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,16 +49,30 @@ namespace LifeTracker
                       .HasDefaultValueSql("NOW()");
 
 
-
             modelBuilder.Entity<DailyStress>()
                 .HasKey(d => d.Date);
 
             modelBuilder.Entity<DailyHeartRate>()
                 .HasKey(d => d.Date);
 
-            // composite primary key of foreign key and timestamp preventing duplicate sample timestamps per day
-            modelBuilder.Entity<HeartRateSample>()
-                .HasKey(s => new { s.Date, s.Timestamp });
+            modelBuilder.Entity<DailySleep>(e =>
+            {
+                e.HasKey(x => x.Date);
+                e.Property(x => x.CreatedAt).HasDefaultValueSql("NOW()");
+            });
+
+            modelBuilder.Entity<HeartRateSample>(e =>
+            {
+                e.HasKey(s => new { s.Date, s.Timestamp }); // composite PK
+                e.Property(s => s.CreatedAt).HasDefaultValueSql("NOW()");
+
+                // 1 DailyHeartRate to many HeartRateSamples 
+                e.HasOne(s => s.DailyHeartRate)
+                    .WithMany(d => d.Samples)
+                    .HasForeignKey(s => s.Date)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
         }
 

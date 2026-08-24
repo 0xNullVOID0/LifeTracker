@@ -366,3 +366,9 @@ FodyWeavers.xsd
 /LifeTracker/logs/
 /LifeTracker/txt/
 /LifeTracker/Bridges/garmin_bridge/.env
+/LifeTracker.Tests
+/LifeTracker/Bridges/garmin_bridge/.idea/inspectionProfiles
+/LifeTracker/Bridges/garmin_bridge/.idea
+/LifeTracker/Bridges/garmin_bridge/.idea/.gitignore
+/LifeTracker/Services/HardwareMonitorService.cs
+/LifeTracker/Services/GarminBridgeHostedService.cs

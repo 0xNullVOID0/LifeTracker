@@ -46,6 +46,25 @@ namespace LifeTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DailySleep",
+                columns: table => new
+                {
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    SleepTimeSeconds = table.Column<int>(type: "integer", nullable: false),
+                    DeepSleepSeconds = table.Column<int>(type: "integer", nullable: false),
+                    LightSleepSeconds = table.Column<int>(type: "integer", nullable: false),
+                    RemSleepSeconds = table.Column<int>(type: "integer", nullable: false),
+                    AwakeSleepSeconds = table.Column<int>(type: "integer", nullable: false),
+                    AvgHeartRate = table.Column<double>(type: "double precision", nullable: true),
+                    AvgSleepStress = table.Column<double>(type: "double precision", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DailySleep", x => x.Date);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DailyStress",
                 columns: table => new
                 {
@@ -84,8 +103,7 @@ namespace LifeTracker.Migrations
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    DailyHeartRateDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Bpm = table.Column<int>(type: "integer", nullable: false),
+                    BPM = table.Column<int>(type: "integer", nullable: false),
                     Sleeping = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
                 },
@@ -93,8 +111,8 @@ namespace LifeTracker.Migrations
                 {
                     table.PrimaryKey("PK_HeartRateSample", x => new { x.Date, x.Timestamp });
                     table.ForeignKey(
-                        name: "FK_HeartRateSample_DailyHeartRate_DailyHeartRateDate",
-                        column: x => x.DailyHeartRateDate,
+                        name: "FK_HeartRateSample_DailyHeartRate_Date",
+                        column: x => x.Date,
                         principalTable: "DailyHeartRate",
                         principalColumn: "Date",
                         onDelete: ReferentialAction.Cascade);
@@ -105,11 +123,6 @@ namespace LifeTracker.Migrations
                 table: "ActivityWatchEvents",
                 column: "Timestamp",
                 descending: new bool[0]);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_HeartRateSample_DailyHeartRateDate",
-                table: "HeartRateSample",
-                column: "DailyHeartRateDate");
         }
 
         /// <inheritdoc />
@@ -117,6 +130,9 @@ namespace LifeTracker.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ActivityWatchEvents");
+
+            migrationBuilder.DropTable(
+                name: "DailySleep");
 
             migrationBuilder.DropTable(
                 name: "DailyStress");
