@@ -1,7 +1,7 @@
 ﻿using LifeTracker.Services;
 
-namespace LifeTracker.Endpoints
-{
+namespace LifeTracker.Endpoints;
+
     public static class GarminEndpoints
     {
         public static IEndpointRouteBuilder MapGarminEndpoints(this IEndpointRouteBuilder routes)
@@ -78,4 +78,3 @@ namespace LifeTracker.Endpoints
             return routes;
         }
     }
-}

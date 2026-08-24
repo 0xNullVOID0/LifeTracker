@@ -3,8 +3,8 @@ using LifeTracker.Dtos.Garmin;
 using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
 
-namespace LifeTracker.Services
-{
+namespace LifeTracker.Services;
+
     public class GarminBridgeService
     {
         private readonly HttpClient _httpClient;
@@ -294,6 +294,5 @@ namespace LifeTracker.Services
             };
     }
 
-    }
     }
 
