@@ -34,14 +34,14 @@ namespace LifeTracker.Services
             // Get JSON activity events from local ActivityWatch API for the specific bucket ID
             var events_dtos = await _httpClient.GetFromJsonAsync<List<ActivityEventDto>>(url);
 
-            if (events_dtos == null || events_dtos.Count == 0)
+            if (events_dtos is null || events_dtos.Count == 0)
                 return new List<ActivityEvent>();
 
             // map DTO's to database entity
             var events = events_dtos.Select(MapToEntity).ToList();
 
             // test save
-            if (events != null && events.Count > 0)
+            if (events is not null && events.Count > 0)
             {
                 await SaveEventsAsync(events);
             }
@@ -76,7 +76,7 @@ namespace LifeTracker.Services
             var events_dtos = await _httpClient.GetFromJsonAsync<List<ActivityEventDto>>(url);
 
             // check if new events exist or not
-            if (events_dtos == null || events_dtos.Count == 0)
+            if (events_dtos is null || events_dtos.Count == 0)
                 return new List<ActivityEvent>();
 
             // map DTOs to DB entity
@@ -90,7 +90,7 @@ namespace LifeTracker.Services
 
         public async Task SaveEventsAsync(List<ActivityEvent> events)
         {
-            if (events == null || events.Count == 0)
+            if (events is null || events.Count == 0)
                 return;
 
             // fetch existing IDs from the incoming batch to prevent duplicate primary key exceptions
@@ -106,7 +106,7 @@ namespace LifeTracker.Services
                 .ToList();
 
             // check if there are still events left after filter(probably would never be empty but just in case)
-            if (events == null || events.Count == 0)
+            if (events is null || events.Count == 0)
                 return;
 
             try

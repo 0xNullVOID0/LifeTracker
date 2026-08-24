@@ -82,7 +82,7 @@ app.MapGet("/buienradar", async (WeatherService weatherService) =>
     try
     {
         var station_data = await weatherService.GetBuienradarDataAsync();
-        return station_data != null ? Results.Ok(station_data) : Results.NotFound();
+        return station_data is not null ? Results.Ok(station_data) : Results.NotFound();
     }
     catch (Exception ex)
     {
@@ -99,7 +99,7 @@ app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchServi
     try
     {
         var activity_data = await activityWatchService.FetchBucketEvents();
-        return activity_data != null ? Results.Ok(activity_data) : Results.NotFound();
+        return activity_data is not null ? Results.Ok(activity_data) : Results.NotFound();
     }
     catch (Exception ex)
     {
@@ -116,7 +116,7 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
     try
     {
         var activity_data = await activityWatchService.FetchNewBucketEvents();
-        return activity_data != null ? Results.Ok(activity_data) : Results.NotFound();
+        return activity_data is not null ? Results.Ok(activity_data) : Results.NotFound();
     }
     catch (Exception ex)
     {

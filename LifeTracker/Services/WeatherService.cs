@@ -26,7 +26,7 @@ namespace LifeTracker.Services
                 .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationId == 6278);
 
             // basic debug console print
-            if (station != null)
+            if (station is not null)
             {
                 Console.WriteLine($"[{DateTime.Now:HH:mm}] Station {station.StationName}:");
                 Console.WriteLine($"Temp: {station.Temperature}°C");
@@ -84,6 +84,6 @@ namespace LifeTracker.Services
 
         public DateTimeOffset CreatedAt { get; set; }
     }
+
+
 }
-
-

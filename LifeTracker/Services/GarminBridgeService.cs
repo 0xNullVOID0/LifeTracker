@@ -103,7 +103,7 @@ namespace LifeTracker.Services
         // Upserts DailyHeartRate with it's related HeartRateSamples
         public async Task SaveDailyHeartRate(DailyHeartRate dailyHeart)
         {
-            if (dailyHeart == null)
+            if (dailyHeart is null)
                 return;
 
             try
@@ -113,7 +113,7 @@ namespace LifeTracker.Services
                     .Include(d => d.Samples)
                     .FirstOrDefaultAsync(d => d.Date == dailyHeart.Date);
 
-                if (existing != null)
+                if (existing is not null)
                 {
                     // Update summary properties
                     existing.RestingRate = dailyHeart.RestingRate;
@@ -222,10 +222,9 @@ namespace LifeTracker.Services
             }
         }
 
-
         public async Task SaveDailyStress(DailyStress dailyStress)
         {
-            if (dailyStress == null)
+            if (dailyStress is null)
                 return;
 
             try
@@ -233,7 +232,7 @@ namespace LifeTracker.Services
                 var existing = await _context.DailyStress.FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
 
                 // Update record if already exists
-                if (existing != null)
+                if (existing is not null)
                 {
                     existing.Average = dailyStress.Average;
                     existing.Max = dailyStress.Max;
@@ -248,7 +247,7 @@ namespace LifeTracker.Services
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex,"Database error occurred while trying to save/update DailyStress for date {Date}.", dailyStress.Date);
+                _logger.LogError(ex, "Database error occurred while trying to save/update DailyStress for date {Date}.", dailyStress.Date);
                 throw;
             }
         }
@@ -265,8 +264,8 @@ namespace LifeTracker.Services
                 .Select(v => new HeartRateSample
                 {
                     Date = dto.CalendarDate, // foreign Key
-                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(v[0]!.Value),
-                    Bpm = (int)v[1]!.Value
+                    Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(v[0]!.Value), // TODO fix timezones
+                    BPM = (int)v[1]!.Value
                 }).ToList() ?? new List<HeartRateSample>()
         };
 
