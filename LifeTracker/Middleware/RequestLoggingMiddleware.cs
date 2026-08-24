@@ -30,7 +30,7 @@ namespace LifeTracker.Middleware
                       : LogLevel.Information;
 
             _logger.LogInformation(
-                "[API] {Method} {Path}{Query} → {StatusCode} in {ElapsedMs}ms",
+                "[API] {Method} {Path}{Query} - {StatusCode} in {ElapsedMs}ms",
                 request.Method,
                 request.Path.Value,
                 query,
@@ -39,5 +39,4 @@ namespace LifeTracker.Middleware
                 context.TraceIdentifier);
         }
     }
-
 }

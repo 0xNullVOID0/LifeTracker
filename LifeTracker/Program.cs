@@ -52,6 +52,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
+app.MapGarminEndpoints();
+
+// TODO security, authentication for API
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
