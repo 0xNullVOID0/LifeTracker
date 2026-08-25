@@ -34,7 +34,8 @@ namespace LifeTracker.Endpoints;
 
                 var data = await service.SyncHeartRateByDay(targetDate);
                 return OkOrNoContent(data);
-            }).WithName("FetchHeartRate");
+        }).WithName("SyncHeartRateByDay").WithSummary("Fetch Garmin Heart Rate data")
+          .WithDescription("Fetches and syncs user's heart rate data for a specific day from the Python Garmin Connect Bridge API to DB");
 
             group.MapGet("/stress", async (DateOnly? date, GarminBridgeService service) =>
             {
@@ -43,7 +44,8 @@ namespace LifeTracker.Endpoints;
 
                 var data = await service.SyncStressLevelByDay(targetDate);
                 return OkOrNoContent(data);
-            }).WithName("FetchStressLevel");
+        }).WithName("SyncStressLevelByDay").WithSummary("Fetch Garmin Stress Level data")
+          .WithDescription("Fetches and syncs user's stress level data for a specific day from the Python Garmin Connect Bridge API to DB");
 
             group.MapGet("/sleep", async (DateOnly? date, GarminBridgeService service) =>
             {
@@ -52,7 +54,8 @@ namespace LifeTracker.Endpoints;
 
                 var data = await service.SyncSleepByDay(targetDate);
                 return OkOrNoContent(data);
-            }).WithName("FetchSleep");
+        }).WithName("SyncSleep").WithSummary("Fetch Garmin Sleep data")
+          .WithDescription("Fetches and syncs user's sleep data for a specific day from the Python Garmin Connect Bridge API to DB");
 
             group.MapGet("/day", async (DateOnly? date, GarminBridgeService service) =>
             {
@@ -61,7 +64,9 @@ namespace LifeTracker.Endpoints;
 
                 var data = await service.GetAllDataByDay(targetDate);
                 return OkOrNoContent(data);
-            }).WithName("GetAllDataByDay");
+        }).WithName("GetAllDataByDay").WithSummary("Fetch all Garmin data for a specific day")
+          .WithDescription("Fetches and syncs all user's available Garmin data for a specific day from the Python Garmin Connect Bridge API");
+
 
             group.MapGet("/sync/all", async (DateOnly? date, GarminBridgeService service) =>
             {
@@ -70,7 +75,8 @@ namespace LifeTracker.Endpoints;
 
                 var data = await service.SyncAllDataByDay(targetDate);
                 return OkOrNoContent(data);
-            }).WithName("SyncAllDataByDay");
+        }).WithName("SyncAllDataByDay").WithSummary("Sync all Garmin data for a specific day")
+          .WithDescription("Fetches and syncs all user's available Garmin data for a specific day from the Python Garmin Connect Bridge API");
 
             group.MapGet("/health", async (GarminBridgeService service) =>
                 await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");
