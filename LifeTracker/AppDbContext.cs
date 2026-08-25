@@ -1,4 +1,5 @@
-﻿using LifeTracker.Entities.ActivityWatch;
+﻿using LifeTracker.Entities;
+using LifeTracker.Entities.ActivityWatch;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
@@ -17,54 +18,58 @@ namespace LifeTracker;
         public DbSet<DailySleep> DailySleep { get; set; }
 
         // TODO proper db health checks, checking if schemas are properly setup even if db is running can still fail if schema is not setup properly
+    // TODO account stuff, rn its just single user hardcoded, stuff like that should be in a separate table and linked to the data, so multiple users can use the same db, "updatedby/createdby", account id linked to every or the proper db entries and such
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public override int SaveChanges()
         {
-            base.OnModelCreating(modelBuilder);
+        SetAuditProperties();
+        return base.SaveChanges();
+    }
 
-            // descending index for timestamp since its used for fetching only new events
-            modelBuilder.Entity<ActivityEvent>()
-                .HasIndex(e => e.Timestamp)
-                .IsDescending();
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        SetAuditProperties();
+        return base.SaveChangesAsync(cancellationToken);
+    }
 
-            // TODO "automate", improve having to manually set createdate for every entity this way
-            modelBuilder.Entity<ActivityEvent>()
-                .Property(e => e.CreatedAt)
-                .HasDefaultValueSql("NOW()");
+    // Sets CreatedAt and UpdatedAt properties for all derived BaseEntities
+    private void SetAuditProperties()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var entries = ChangeTracker.Entries<BaseEntity>();
 
-            modelBuilder.Entity<StationMeasurement>()
-                .Property(e => e.CreatedAt)
-                .HasDefaultValueSql("NOW()");
-
-            modelBuilder.Entity<DailyHeartRate>()
-                .Property(e => e.CreatedAt)
-                .HasDefaultValueSql("NOW()");
-
-            modelBuilder.Entity<HeartRateSample>()
-                .Property(e => e.CreatedAt)
-                .HasDefaultValueSql("NOW()");
-
-            modelBuilder.Entity<DailyStress>()
-                      .Property(e => e.CreatedAt)
-                      .HasDefaultValueSql("NOW()");
-
-
-            modelBuilder.Entity<DailyStress>()
-                .HasKey(d => d.Date);
-
-            modelBuilder.Entity<DailyHeartRate>()
-                .HasKey(d => d.Date);
-
-            modelBuilder.Entity<DailySleep>(e =>
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
             {
-                e.HasKey(x => x.Date);
-                e.Property(x => x.CreatedAt).HasDefaultValueSql("NOW()");
-            });
+                if (entry.Entity.CreatedAt == default)
+                {
+                    entry.Entity.CreatedAt = now;
+                }
+                entry.Entity.UpdatedAt = now;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = now;
+            }
+        }
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // descending index for timestamp since its used for fetching only new events
+        modelBuilder.Entity<ActivityEvent>().HasIndex(e => e.Timestamp).IsDescending();
+
+        modelBuilder.Entity<DailyHeartRate>().HasKey(d => d.Date);
+        modelBuilder.Entity<DailyStress>().HasKey(d => d.Date);
+        modelBuilder.Entity<DailySleep>().HasKey(d => d.Date);
+
 
             modelBuilder.Entity<HeartRateSample>(e =>
             {
                 e.HasKey(s => new { s.Date, s.Timestamp }); // composite PK
-                e.Property(s => s.CreatedAt).HasDefaultValueSql("NOW()");
 
                 // 1 DailyHeartRate to many HeartRateSamples 
                 e.HasOne(s => s.DailyHeartRate)

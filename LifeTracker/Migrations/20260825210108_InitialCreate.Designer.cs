@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260824023836_InitialCreate")]
+    [Migration("20260825210108_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -41,9 +41,7 @@ namespace LifeTracker.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<double>("Duration")
                         .HasColumnType("double precision");
@@ -69,9 +67,7 @@ namespace LifeTracker.Migrations
                         .HasColumnType("date");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("Max")
                         .HasColumnType("integer");
@@ -81,6 +77,9 @@ namespace LifeTracker.Migrations
 
                     b.Property<int?>("RestingRate")
                         .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Date");
 
@@ -118,6 +117,9 @@ namespace LifeTracker.Migrations
                     b.Property<int>("SleepTimeSeconds")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Date");
 
                     b.ToTable("DailySleep");
@@ -132,12 +134,13 @@ namespace LifeTracker.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("Max")
                         .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Date");
 
@@ -163,6 +166,9 @@ namespace LifeTracker.Migrations
                     b.Property<bool>("Sleeping")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Date", "Timestamp");
 
                     b.ToTable("HeartRateSample");
@@ -181,9 +187,7 @@ namespace LifeTracker.Migrations
                         .HasJsonPropertyName("airpressure");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<float?>("Humidity")
                         .HasColumnType("real")
