@@ -58,7 +58,7 @@ namespace LifeTracker.Migrations
                     AwakeSleepSeconds = table.Column<int>(type: "integer", nullable: false),
                     AvgHeartRate = table.Column<double>(type: "double precision", nullable: true),
                     AvgSleepStress = table.Column<double>(type: "double precision", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -108,7 +108,7 @@ namespace LifeTracker.Migrations
                     Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     BPM = table.Column<int>(type: "integer", nullable: false),
                     Sleeping = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>

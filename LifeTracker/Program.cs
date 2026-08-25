@@ -39,8 +39,8 @@ builder.Services.AddHttpClient<GarminBridgeService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:GarminConnect"));
 
 // get DB credentials and config from appsettings
-var connectionString = builder.Configuration.GetConnectionString("LifeTrackerDB")
-    ?? throw new InvalidOperationException("Connection string 'LifeTrackerDB' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString, sqlOptions =>
@@ -61,7 +61,13 @@ app.MapGarminEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference(); // add scalar for automated API documentation & and easy testing
+    
+    // add scalar for automated API documentation & and easy testing
+    app.MapScalarApiReference(options =>
+    {
+        // tell Scalar where to find the JSON spec using http to fix http/https mismatch when running docker
+        options.WithOpenApiRoutePattern("/openapi/v1.json");
+    });
 
     app.UseDeveloperExceptionPage(); // gives full stack traces for debugging
 
@@ -130,5 +136,13 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
 app.Logger.LogInformation("\n\n--------------------------------------------------");
 app.Logger.LogInformation("LifeTracker API started");
 app.Logger.LogInformation("--------------------------------------------------\n");
+
+
+// apply any pending migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();

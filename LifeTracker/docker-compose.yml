@@ -25,19 +25,35 @@ services:
       - "9002:9002"
     env_file:
       - ./Bridges/garmin_bridge/.env
-    environment:
-      # auth token
-      GARMIN_TOKEN_DIR: /data/garminconnect
+    environment:        # auth token
+      GARMIN_TOKEN_DIR: /data/garminconnect 
     volumes:
       - garmin_tokens:/data/garminconnect
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:9002/health')\""]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:9002/garmin/health')\""]
       interval: 5s
       timeout: 5s
       retries: 12
       start_period: 20s
     restart: unless-stopped
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lifetracker-api
+    ports:
+      - "5071:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword
+      - APIs__GarminConnect=http://garmin_bridge:9002/garmin/
+    depends_on:
+      db:
+        condition: service_healthy
+      garmin_bridge:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   lifetracker_pgdata:
