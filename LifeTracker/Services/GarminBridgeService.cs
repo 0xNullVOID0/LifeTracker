@@ -43,26 +43,28 @@ namespace LifeTracker.Services;
 
         // Gets all Garmin data from DB by date
         // TODO proper combined entity project for a days worth of data?
-        public async Task<IResult> GetAllDataByDay(DateOnly date)
+    public async Task<GarminDay> GetAllDataByDay(DateOnly date)
         {
             var heart = await _context.DailyHeartRate.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
             var stress = await _context.DailyStress.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
             var sleep = await _context.DailySleep.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
 
             if (heart is null && stress is null && sleep is null)
-                return Results.NoContent();
+            return null;
+
+        return new GarminDay(heart, stress, sleep);
 
             return Results.Ok(new { heart, stress, sleep });
         }
 
         // Syncs all Garmin data from the official API via the python GarminConnect bridge and upserts into DB
-        public async Task<IResult> SyncAllDataByDay(DateOnly date)
+    public async Task<GarminDay> SyncAllDataByDay(DateOnly date)
         {
             var heart = await SyncHeartRateByDay(date);
             var stress = await SyncStressLevelByDay(date);
             var sleep = await SyncSleepByDay(date);
-
-            return Results.Ok(new { heart, stress, sleep });
+        var day = new GarminDay(heart, stress, sleep);
+        return day;
         }
 
         public async Task<DailyHeartRate?> SyncHeartRateByDay(DateOnly date)
