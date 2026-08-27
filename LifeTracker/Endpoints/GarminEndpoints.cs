@@ -1,4 +1,7 @@
-﻿using LifeTracker.Services;
+﻿using LifeTracker.Entities;
+using LifeTracker.Entities.Garmin;
+using LifeTracker.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace LifeTracker.Endpoints;
 
@@ -77,6 +80,14 @@ namespace LifeTracker.Endpoints;
                 return OkOrNoContent(data);
         }).WithName("SyncAllDataByDay").WithSummary("Sync all Garmin data for a specific day")
           .WithDescription("Fetches and syncs all user's available Garmin data for a specific day from the Python Garmin Connect Bridge API");
+        group.MapPost("/sync/backfill", async (int? days, GarminBridgeService service, CancellationToken ct) =>
+        group.MapPost("/sync/backfill", async (int? days, GarminBridgeService service) =>
+        {
+            var data = await service.SyncRecentDays(days ?? 14);
+            return Results.Ok(data);
+        }).WithName("SyncRecentDays").WithSummary("Sync recent Garmin days into the database")
+          .WithDescription("Walks backward from today (default 14 days, max 31). Skips empty days. Stops on bridge/Garmin errors. Does not run on startup.")
+          .Produces<BackfillResult>(StatusCodes.Status200OK);
 
             group.MapGet("/health", async (GarminBridgeService service) =>
                 await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");
@@ -84,3 +95,5 @@ namespace LifeTracker.Endpoints;
             return routes;
         }
     }
+
+public sealed record BackfillResult(int Synced, int Empty, DateOnly? StoppedAt, string? Error);

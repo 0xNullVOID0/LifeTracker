@@ -21,6 +21,41 @@ namespace LifeTracker.Services;
         public async Task<object?> GarminBridgeHealthCheck() =>
             await _httpClient.GetFromJsonAsync<object?>("health");
 
+    // TODO cancellation tokens? since its such a long duration function
+    // TODO turn into background task or something
+    // Function for syncing larger stretches of Garming data such as for a first time setup
+    public async Task<BackfillResult> SyncRecentDays(int days = 14)
+    {
+        days = Math.Clamp(days, 1, 31); // cap backfill to 1 month to prevent overloading the Garmin API and getting rate limited. TODO add slower background task later for syncing long term profile data
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        int synced = 0;
+        int empty = 0;
+
+        // Loop from oldest to today for most organic data entry and prevent possible conflicts as best as possible
+        for (var i = days - 1; i >= 0; i--) 
+        {
+            var date = today.AddDays(-i);
+
+            try
+            {
+                GarminDay day = await SyncAllDataByDay(date);
+                if (day is null) empty++;
+                else synced++;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "Backfill stopped at {Date}", date);
+                return new BackfillResult(synced, empty, StoppedAt: date, Error: ex.Message);
+            }
+
+            await Task.Delay(400); // delay to prevent hard spamming the official Garmin API and get rate limited
+        }
+
+        return new BackfillResult(synced, empty, StoppedAt: null, Error: null);
+    }
+
+    public sealed record BackfillResult(int Synced, int Empty, DateOnly? StoppedAt, string? Error);
+
         // TODO add polly
         private async Task<T?> GetFromBridgeAsync<T>(string endpoint, DateOnly date)
         {
@@ -42,8 +77,7 @@ namespace LifeTracker.Services;
             await _context.DailySleep.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
 
         // Gets all Garmin data from DB by date
-        // TODO proper combined entity project for a days worth of data?
-    public async Task<GarminDay> GetAllDataByDay(DateOnly date)
+    public async Task<GarminDay?> GetAllDataByDay(DateOnly date)
         {
             var heart = await _context.DailyHeartRate.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
             var stress = await _context.DailyStress.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
@@ -52,7 +86,8 @@ namespace LifeTracker.Services;
             if (heart is null && stress is null && sleep is null)
             return null;
 
-        return new GarminDay(heart, stress, sleep);
+        return new GarminDay(date, heart, stress, sleep);
+    }
 
             return Results.Ok(new { heart, stress, sleep });
         }
@@ -63,8 +98,11 @@ namespace LifeTracker.Services;
             var heart = await SyncHeartRateByDay(date);
             var stress = await SyncStressLevelByDay(date);
             var sleep = await SyncSleepByDay(date);
-        var day = new GarminDay(heart, stress, sleep);
-        return day;
+
+        if (heart is null && stress is null && sleep is null)
+            return null;
+
+        return new GarminDay(date, heart, stress, sleep);
         }
 
         public async Task<DailyHeartRate?> SyncHeartRateByDay(DateOnly date)
