@@ -57,7 +57,7 @@ namespace LifeTracker.Services;
     public sealed record BackfillResult(int Synced, int Empty, DateOnly? StoppedAt, string? Error);
 
         // TODO add polly
-        private async Task<T?> GetFromBridgeAsync<T>(string endpoint, DateOnly date)
+    private async Task<T?> FetchFromBridgeAsync<T>(string endpoint, DateOnly date)
         {
             var url = $"{endpoint}?date={date:yyyy-MM-dd}";
             using var response = await _httpClient.GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
@@ -107,22 +107,22 @@ namespace LifeTracker.Services;
 
         public async Task<DailyHeartRate?> SyncHeartRateByDay(DateOnly date)
         {
-            var heartDto = await GetFromBridgeAsync<DailyHeartRateDto>("heartrate", date);
-            if (heartDto is null)
+        var heartDTO = await FetchFromBridgeAsync<DailyHeartRateDto>("heartrate", date);
+        if (heartDTO is null)
                 return null;
 
-            var dailyHeart = MapToEntity(heartDto);
+        var dailyHeart = MapToEntity(heartDTO);
             await SaveDailyHeartRate(dailyHeart);
             return dailyHeart;
         }
 
         public async Task<DailyStress?> SyncStressLevelByDay(DateOnly date)
         {
-            var stressDto = await GetFromBridgeAsync<DailyStressDto>("stress", date);
-            if (stressDto is null)
+        var stressDTO = await FetchFromBridgeAsync<DailyStressDto>("stress", date);
+        if (stressDTO is null)
                 return null;
 
-            var dailyStress = MapToEntity(stressDto);
+        var dailyStress = MapToEntity(stressDTO);
             await SaveDailyStress(dailyStress);
             return dailyStress;
         }
@@ -130,12 +130,12 @@ namespace LifeTracker.Services;
         // TODO function, cron for getting all backlog data, a first time profile setup to get all available data history, possible rate limit stuff 
         public async Task<DailySleep?> SyncSleepByDay(DateOnly date)
         {
-            var sleepDto = await GetFromBridgeAsync<SleepResponseDto>("sleep", date);
-            if (sleepDto is null)
+        var sleepDTO = await FetchFromBridgeAsync<SleepResponseDto>("sleep", date);
+        if (sleepDTO is null)
                 return null;
 
-            var dailySleep = MapToEntity(sleepDto);
-            await SaveDailySleep(dailySleep, sleepDto.SleepHeartRate);
+        var dailySleep = MapToEntity(sleepDTO);
+        await SaveDailySleep(dailySleep, sleepDTO.SleepHeartRate);
             return dailySleep;
         }
 
