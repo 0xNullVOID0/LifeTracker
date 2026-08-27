@@ -21,13 +21,13 @@ public class DailyHeartRateDto
     public DateTime EndTimestampLocal { get; set; }
 
     [JsonPropertyName("minHeartRate")]
-    public int? MinHeartRate { get; set; }
+    public int MinHeartRate { get; set; }
 
     [JsonPropertyName("maxHeartRate")]
-    public int? MaxHeartRate { get; set; }
+    public int MaxHeartRate { get; set; }
 
     [JsonPropertyName("restingHeartRate")]
-    public int? RestingHeartRate { get; set; }
+    public int RestingHeartRate { get; set; }
 
     [JsonPropertyName("lastSevenDaysAvgRestingHeartRate")]
     public int? SevenDaysAvgRestingHeartRate { get; set; }

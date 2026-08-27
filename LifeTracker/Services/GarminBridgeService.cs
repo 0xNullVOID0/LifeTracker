@@ -334,8 +334,8 @@ namespace LifeTracker.Services;
                 LightSleepSeconds = d.LightSleepSeconds,
                 RemSleepSeconds = d.RemSleepSeconds,
                 AwakeSleepSeconds = d.AwakeSleepSeconds,
-                AvgHeartRate = d.AvgHeartRate,
-                AvgSleepStress = d.AvgSleepStress
+            AvgHeartRate = (int)d.AvgHeartRate,
+            AvgSleepStress = (int)d.AvgSleepStress,
             };
     }
 

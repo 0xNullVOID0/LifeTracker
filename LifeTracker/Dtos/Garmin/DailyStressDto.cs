@@ -22,16 +22,16 @@ public class DailyStressDto
     public DateTime EndTimestampLocal { get; set; }
 
     [JsonPropertyName("maxStressLevel")]
-    public int? MaxStressLevel { get; set; }
+    public int MaxStressLevel { get; set; }
 
     [JsonPropertyName("avgStressLevel")]
-    public int? AvgStressLevel { get; set; }
+    public int AvgStressLevel { get; set; }
 
     [JsonPropertyName("stressChartValueOffset")]
-    public int? StressChartValueOffset { get; set; }
+    public int StressChartValueOffset { get; set; }
 
     [JsonPropertyName("stressChartYAxisOrigin")]
-    public int? StressChartYAxisOrigin { get; set; }
+    public int StressChartYAxisOrigin { get; set; }
 
     [JsonPropertyName("stressValuesArray")]
     public List<long?[]>? StressValuesArray { get; set; }

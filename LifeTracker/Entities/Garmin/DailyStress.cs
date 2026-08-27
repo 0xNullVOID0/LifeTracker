@@ -6,8 +6,8 @@ namespace LifeTracker.Entities.Garmin;
 public class DailyStress : GarminEntity
 {
     [DefaultValue(16)]
-    public int? Average { get; set; }
+    public int Average { get; set; }
 
     [DefaultValue(99)]
-    public int? Max { get; set; }
+    public int Max { get; set; }
 }

@@ -32,10 +32,10 @@ public class DailySleepDto
     public int AwakeSleepSeconds { get; set; }
 
     [JsonPropertyName("avgHeartRate")]
-    public double? AvgHeartRate { get; set; }
+    public double AvgHeartRate { get; set; }
 
     [JsonPropertyName("avgSleepStress")]
-    public double? AvgSleepStress { get; set; }
+    public double AvgSleepStress { get; set; }
 }
 
 public class GarminTimeSampleDto
