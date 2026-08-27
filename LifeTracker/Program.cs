@@ -7,11 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
 
-//AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
-//{
-//    // catch every exception to print in console
-//    Console.WriteLine($"[Internal Exception] {eventArgs.Exception.GetType().Name}: {eventArgs.Exception.Message}");
-//};
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +46,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<DateQueryMiddleware>();
 app.MapHealthChecks("/health");
 app.MapGarminEndpoints();
 
