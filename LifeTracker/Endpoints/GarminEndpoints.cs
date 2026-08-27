@@ -109,6 +109,45 @@ namespace LifeTracker.Endpoints;
           .WithDescription("Walks backward from today (default 14 days, max 31). Skips empty days. Stops on bridge/Garmin errors. Does not run on startup.")
           .Produces<BackfillResult>(StatusCodes.Status200OK);
 
+
+        group.MapGet("/heartrate", async (DateOnly? date, GarminBridgeService service) =>
+        {
+            if (ValidateDate(date, out var targetDate) is { } error)
+                return error;
+
+            var data = await service.GetHeartRateByDay(targetDate);
+            return OkOrNoContent(data);
+        }).WithName("GetHeartRateByDay").WithSummary("Get stored heart rate for a specific day")
+          .WithDescription("Gets and returns DailyHeartRate and it's HeartRateSamples from DB")
+          .Produces<DailyHeartRate>(StatusCodes.Status200OK)
+          .Produces(StatusCodes.Status204NoContent)
+          .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/stress", async (DateOnly? date, GarminBridgeService service) =>
+        {
+            if (ValidateDate(date, out var targetDate) is { } error)
+                return error;
+
+            var data = await service.GetStressByDay(targetDate);
+            return OkOrNoContent(data);
+        }).WithName("GetStressByDay").WithSummary("Get stored stress for a specific day")
+          .WithDescription("Gets and returns DailyStress from DB")
+          .Produces<DailyStress>(StatusCodes.Status200OK)
+          .Produces(StatusCodes.Status204NoContent)
+          .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/sleep", async (DateOnly? date, GarminBridgeService service) =>
+        {
+            if (ValidateDate(date, out var targetDate) is { } error)
+                return error;
+
+            var data = await service.GetSleepByDay(targetDate);
+            return OkOrNoContent(data);
+        }).WithName("GetSleepByDay").WithSummary("Get stored sleep for a specific day")
+          .WithDescription("Gets and returns DailySleep from DB")
+          .Produces<DailySleep>(StatusCodes.Status200OK)
+          .Produces(StatusCodes.Status204NoContent)
+          .ProducesProblem(StatusCodes.Status400BadRequest);
             group.MapGet("/health", async (GarminBridgeService service) =>
                 await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");
 

@@ -72,6 +72,11 @@ namespace LifeTracker.Services;
             return await response.Content.ReadFromJsonAsync<T>(); // deserialize the response's body to type T
         }
 
+    public async Task<DailyHeartRate?> GetHeartRateByDay(DateOnly date) =>
+        await _context.DailyHeartRate.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
+
+    public async Task<DailyStress?> GetStressByDay(DateOnly date) =>
+        await _context.DailyStress.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
 
         public async Task<DailySleep?> GetSleepByDay(DateOnly date) =>
             await _context.DailySleep.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
@@ -79,9 +84,9 @@ namespace LifeTracker.Services;
         // Gets all Garmin data from DB by date
     public async Task<GarminDay?> GetAllDataByDay(DateOnly date)
         {
-            var heart = await _context.DailyHeartRate.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
-            var stress = await _context.DailyStress.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
-            var sleep = await _context.DailySleep.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+        var heart = await GetHeartRateByDay(date);
+        var stress = await GetStressByDay(date);
+        var sleep = await GetSleepByDay(date);
 
             if (heart is null && stress is null && sleep is null)
             return null;
