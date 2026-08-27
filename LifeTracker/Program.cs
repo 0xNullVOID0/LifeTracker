@@ -134,11 +134,30 @@ app.Logger.LogInformation("LifeTracker API started");
 app.Logger.LogInformation("--------------------------------------------------\n");
 
 
-// apply any pending migrations on startup
+// apply any pending migrations on startup and check if the database is ready
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    const int attempts = 10;
+    for (var i = 1; i <= attempts; i++)
+    {
+        try
+        {
+            await db.Database.MigrateAsync();
+            app.Logger.LogInformation("Database migrated");
+            break;
+        }
+        catch (Npgsql.NpgsqlException ex) when (i < attempts)
+        {
+            app.Logger.LogWarning(ex, "Database not ready (attempt {Attempt}/{Total}). Start Postgres: docker compose up -d db", i, attempts);
+            await Task.Delay(2000);
+        }
+    }
 }
+
+// bind default route to scalar too
+app.MapGet("/", () => Results.Redirect("/scalar"))
+   .ExcludeFromDescription();
 
 app.Run();
