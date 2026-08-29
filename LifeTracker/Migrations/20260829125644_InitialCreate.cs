@@ -32,6 +32,26 @@ namespace LifeTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "BuienradarStationMeasurements",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    StationId = table.Column<int>(type: "integer", nullable: false),
+                    StationName = table.Column<string>(type: "text", nullable: false),
+                    WindspeedBft = table.Column<float>(type: "real", nullable: true),
+                    AirPressure = table.Column<float>(type: "real", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Temperature = table.Column<float>(type: "real", nullable: false),
+                    Humidity = table.Column<float>(type: "real", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BuienradarStationMeasurements", x => x.ID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DailyHeartRate",
                 columns: table => new
                 {
@@ -103,26 +123,6 @@ namespace LifeTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WeatherLogs",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StationId = table.Column<int>(type: "integer", nullable: false),
-                    StationName = table.Column<string>(type: "text", nullable: false),
-                    Temperature = table.Column<float>(type: "real", nullable: true),
-                    Humidity = table.Column<float>(type: "real", nullable: true),
-                    WindspeedBft = table.Column<float>(type: "real", nullable: true),
-                    AirPressure = table.Column<float>(type: "real", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WeatherLogs", x => x.ID);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "HeartRateSample",
                 columns: table => new
                 {
@@ -158,6 +158,9 @@ namespace LifeTracker.Migrations
                 name: "ActivityWatchEvents");
 
             migrationBuilder.DropTable(
+                name: "BuienradarStationMeasurements");
+
+            migrationBuilder.DropTable(
                 name: "DailySleep");
 
             migrationBuilder.DropTable(
@@ -168,9 +171,6 @@ namespace LifeTracker.Migrations
 
             migrationBuilder.DropTable(
                 name: "RoomClimateMeasurements");
-
-            migrationBuilder.DropTable(
-                name: "WeatherLogs");
 
             migrationBuilder.DropTable(
                 name: "DailyHeartRate");

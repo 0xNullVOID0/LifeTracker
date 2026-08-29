@@ -61,6 +61,50 @@ namespace LifeTracker.Migrations
                     b.ToTable("ActivityWatchEvents");
                 });
 
+            modelBuilder.Entity("LifeTracker.Entities.ESP32.BuienradarStationMeasurement", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<float>("AirPressure")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("airpressure");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<float>("Humidity")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("humidity");
+
+                    b.Property<int>("StationId")
+                        .HasColumnType("integer")
+                        .HasJsonPropertyName("stationid");
+
+                    b.Property<string>("StationName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("stationname");
+
+                    b.Property<float>("Temperature")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("temperature");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<float?>("WindspeedBft")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("windspeedBft");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("BuienradarStationMeasurements");
+                });
+
             modelBuilder.Entity("LifeTracker.Entities.ESP32.RoomClimateMeasurement", b =>
                 {
                     b.Property<int>("ID")
@@ -80,11 +124,13 @@ namespace LifeTracker.Migrations
 
                     b.Property<float>("Humidity")
                         .HasColumnType("real")
-                        .HasColumnOrder(5);
+                        .HasColumnOrder(5)
+                        .HasJsonPropertyName("humidity");
 
                     b.Property<float>("Temperature")
                         .HasColumnType("real")
-                        .HasColumnOrder(4);
+                        .HasColumnOrder(4)
+                        .HasJsonPropertyName("temperature");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone")
@@ -212,50 +258,6 @@ namespace LifeTracker.Migrations
                     b.HasKey("Date", "Timestamp");
 
                     b.ToTable("HeartRateSample");
-                });
-
-            modelBuilder.Entity("LifeTracker.Services.StationMeasurement", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
-
-                    b.Property<float?>("AirPressure")
-                        .HasColumnType("real")
-                        .HasJsonPropertyName("airpressure");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<float?>("Humidity")
-                        .HasColumnType("real")
-                        .HasJsonPropertyName("humidity");
-
-                    b.Property<int>("StationId")
-                        .HasColumnType("integer")
-                        .HasJsonPropertyName("stationid");
-
-                    b.Property<string>("StationName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasJsonPropertyName("stationname");
-
-                    b.Property<float?>("Temperature")
-                        .HasColumnType("real")
-                        .HasJsonPropertyName("temperature");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<float?>("WindspeedBft")
-                        .HasColumnType("real")
-                        .HasJsonPropertyName("windspeedBft");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("WeatherLogs");
                 });
 
             modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSample", b =>

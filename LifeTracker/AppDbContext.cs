@@ -7,23 +7,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LifeTracker;
 
-    public class AppDbContext : DbContext
-    {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<StationMeasurement> WeatherLogs { get; set; }
+    public DbSet<BuienradarStationMeasurement> BuienradarStationMeasurements { get; set; }
     public DbSet<RoomClimateMeasurement> RoomClimateMeasurements { get; set; }
-        public DbSet<ActivityEvent> ActivityWatchEvents { get; set; }
-        public DbSet<HeartRateSample> HeartRateSample { get; set; }
-        public DbSet<DailyHeartRate> DailyHeartRate { get; set; }
-        public DbSet<DailyStress> DailyStress { get; set; }
-        public DbSet<DailySleep> DailySleep { get; set; }
+    public DbSet<ActivityEvent> ActivityWatchEvents { get; set; }
+    public DbSet<HeartRateSample> HeartRateSample { get; set; }
+    public DbSet<DailyHeartRate> DailyHeartRate { get; set; }
+    public DbSet<DailyStress> DailyStress { get; set; }
+    public DbSet<DailySleep> DailySleep { get; set; }
 
-        // TODO proper db health checks, checking if schemas are properly setup even if db is running can still fail if schema is not setup properly
+    // TODO proper db health checks, checking if schemas are properly setup even if db is running can still fail if schema is not setup properly
     // TODO account stuff, rn its just single user hardcoded, stuff like that should be in a separate table and linked to the data, so multiple users can use the same db, "updatedby/createdby", account id linked to every or the proper db entries and such
 
     public override int SaveChanges()
-        {
+    {
         SetAuditProperties();
         return base.SaveChanges();
     }
@@ -69,17 +69,17 @@ namespace LifeTracker;
         modelBuilder.Entity<DailySleep>().HasKey(d => d.Date);
 
 
-            modelBuilder.Entity<HeartRateSample>(e =>
-            {
-                e.HasKey(s => new { s.Date, s.Timestamp }); // composite PK
+        modelBuilder.Entity<HeartRateSample>(e =>
+        {
+            e.HasKey(s => new { s.Date, s.Timestamp }); // composite PK
 
-                // 1 DailyHeartRate to many HeartRateSamples 
-                e.HasOne(s => s.DailyHeartRate)
-                    .WithMany(d => d.Samples)
-                    .HasForeignKey(s => s.Date)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+            // 1 DailyHeartRate to many HeartRateSamples 
+            e.HasOne(s => s.DailyHeartRate)
+                .WithMany(d => d.Samples)
+                .HasForeignKey(s => s.Date)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         // Adjust column order in DB due to ClimateMeasurement already being an extension of BaseEntity 
         modelBuilder.Entity<RoomClimateMeasurement>(entity =>
@@ -93,6 +93,6 @@ namespace LifeTracker;
             entity.Property(e => e.UpdatedAt).HasColumnOrder(7);
         });
 
-        }
-
     }
+
+}

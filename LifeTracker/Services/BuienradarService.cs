@@ -1,28 +1,30 @@
 ﻿using System.Text.Json.Serialization;
+using LifeTracker.Entities;
+using LifeTracker.Entities.ESP32;
 
 
 namespace LifeTracker.Services;
 
-public class WeatherService
+public class BuienradarService
 {
     private readonly HttpClient _httpClient;
     private readonly AppDbContext _context;
 
-    public WeatherService(HttpClient httpclient, AppDbContext context)
+    public BuienradarService(HttpClient httpclient, AppDbContext context)
     {
         _httpClient = httpclient;
         _context = context;
     }
 
 
-    public async Task<StationMeasurement?> GetBuienradarDataAsync()
+    public async Task<BuienradarStationMeasurement?> GetBuienradarDataAsync()
     {
         // Get JSON weather data from buienradar
         var data = await _httpClient.GetFromJsonAsync<BuienradarResponse>(_httpClient.BaseAddress);
 
         // Get closest station
-        var station = data?.Actual?.StationMeasurements
-            .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationId == 6278);
+        var station = data?.Actual?.BuienradarStationMeasurements
+            .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationId == 6278); // TODO make configurable
 
         // basic debug console print
         if (station is not null)
@@ -40,9 +42,9 @@ public class WeatherService
         return station;
     }
 
-    public async Task SaveMeasurementAsync(StationMeasurement measurement)
+    public async Task SaveMeasurementAsync(BuienradarStationMeasurement measurement)
     {
-        _context.WeatherLogs.Add(measurement);
+        _context.BuienradarStationMeasurements.Add(measurement);
         await _context.SaveChangesAsync();
     }
 }
@@ -56,30 +58,7 @@ public class BuienradarResponse
 public class ActualData
 {
     [JsonPropertyName("stationmeasurements")]
-    public List<StationMeasurement> StationMeasurements { get; set; }
+    public List<BuienradarStationMeasurement> BuienradarStationMeasurements { get; set; }
 }
 
-public class StationMeasurement
-{
-    public int ID { get; set; }
 
-    [JsonPropertyName("stationid")]
-    public int StationId { get; set; }
-
-    [JsonPropertyName("stationname")]
-    public string StationName { get; set; }
-
-    [JsonPropertyName("temperature")]
-    public float? Temperature { get; set; }
-
-    [JsonPropertyName("humidity")]
-    public float? Humidity { get; set; }
-
-    [JsonPropertyName("windspeedBft")]
-    public float? WindspeedBft { get; set; }
-
-    [JsonPropertyName("airpressure")]
-    public float? AirPressure { get; set; }
-
-    public DateTimeOffset CreatedAt { get; set; }
-}

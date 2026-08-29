@@ -23,7 +23,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
 
-builder.Services.AddHttpClient<WeatherService>(client => 
+builder.Services.AddHttpClient<BuienradarService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar"));
 
 builder.Services.AddHttpClient<ESP32Service>(client =>
@@ -51,6 +51,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+builder.WebHost.UseUrls("http://0.0.0.0:5071"); // So ESP32 can reach backend from different IP outside localhost
 app.UseMiddleware<DateQueryMiddleware>();
 app.MapHealthChecks("/health");
 app.MapGarminEndpoints();
@@ -83,12 +84,13 @@ app.UseHttpsRedirection();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapGet("/buienradar", async (WeatherService weatherService) =>
+app.MapGet("/buienradar", async (BuienradarService buienradarService) =>
 {
     app.Logger.LogInformation("[API] Route: /buienradar");
 
     try
     {
-        var station_data = await weatherService.GetBuienradarDataAsync();
+        var station_data = await buienradarService.GetBuienradarDataAsync();
         return station_data is not null ? Results.Ok(station_data) : Results.NotFound();
     }
     catch (Exception ex)

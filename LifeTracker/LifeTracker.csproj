@@ -27,4 +27,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Bridges\ESP32RoomClimate\**" />
+    <None Include="Bridges\ESP32RoomClimate\**" />
+  </ItemGroup>
 </Project>
