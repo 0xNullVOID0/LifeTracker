@@ -5,6 +5,7 @@
 #include "time.h"
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include "secrets.h"
 
 #ifdef NO_ERROR
 #undef NO_ERROR
@@ -16,10 +17,9 @@ SensirionI2cScd4x sensor;
 static char errorMessage[64];
 static int16_t error;
 
-const char* ssid     = "default";
-const char* password = "default";
-
-const char* apiEndpoint = "http://192.168.1.246:5071/API/room-climate";
+const char* ssid     = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
+const char* apiEndpoint = API_ENDPOINT;
 
 // Server and settings for getting current datetime
 const char* ntpServer = "pool.ntp.org";
