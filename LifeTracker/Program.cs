@@ -1,6 +1,8 @@
+using System.Text;
 using LifeTracker;
 using LifeTracker.Configuration;
 using LifeTracker.Endpoints;
+using LifeTracker.Entities.ESP32;
 using LifeTracker.Middleware;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,9 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient<WeatherService>(client => 
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar"));
+
+builder.Services.AddHttpClient<ESP32Service>(client =>
+    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ESP32RoomClimate"));
 
 builder.Services.Configure<ActivityWatchSettings>(
     builder.Configuration.GetSection(ActivityWatchSettings.SectionName));
@@ -94,7 +99,24 @@ app.MapGet("/buienradar", async (WeatherService weatherService) =>
 })
 .WithName("GetBuienradar");
 
-app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchService) =>
+app.MapPost("/API/room-climate", async (RoomClimateMeasurement roomClimate, ESP32Service esp32Service) =>
+{
+    app.Logger.LogInformation("[API] Route: /API/room-climate ESP32 data received");
+
+    try
+    {
+        await esp32Service.SaveRoomClimate(roomClimate);
+
+        return Results.Ok(new { success = true, message = "Saved RoomClimateMeasurement measurement" });
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "[API] /API/room-climate ERROR");
+        return Results.Problem($"CRASH: {ex.Message}");
+    }
+})
+.WithName("PostRoomClimate");
+
 {
     app.Logger.LogInformation("[API] Route: /activity-watch/all");
 

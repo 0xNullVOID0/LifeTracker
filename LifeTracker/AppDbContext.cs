@@ -1,4 +1,5 @@
 ﻿using LifeTracker.Entities;
+using LifeTracker.Entities.ESP32;
 using LifeTracker.Entities.ActivityWatch;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
@@ -11,6 +12,7 @@ namespace LifeTracker;
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<StationMeasurement> WeatherLogs { get; set; }
+    public DbSet<RoomClimateMeasurement> RoomClimateMeasurements { get; set; }
         public DbSet<ActivityEvent> ActivityWatchEvents { get; set; }
         public DbSet<HeartRateSample> HeartRateSample { get; set; }
         public DbSet<DailyHeartRate> DailyHeartRate { get; set; }

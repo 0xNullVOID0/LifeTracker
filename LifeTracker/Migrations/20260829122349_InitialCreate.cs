@@ -23,7 +23,8 @@ namespace LifeTracker.Migrations
                     Duration = table.Column<double>(type: "double precision", nullable: false),
                     App = table.Column<string>(type: "text", nullable: false),
                     Title = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -35,9 +36,9 @@ namespace LifeTracker.Migrations
                 columns: table => new
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
-                    RestingRate = table.Column<int>(type: "integer", nullable: true),
-                    Min = table.Column<int>(type: "integer", nullable: true),
-                    Max = table.Column<int>(type: "integer", nullable: true),
+                    RestingRate = table.Column<int>(type: "integer", nullable: false),
+                    Min = table.Column<int>(type: "integer", nullable: false),
+                    Max = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -56,8 +57,10 @@ namespace LifeTracker.Migrations
                     LightSleepSeconds = table.Column<int>(type: "integer", nullable: false),
                     RemSleepSeconds = table.Column<int>(type: "integer", nullable: false),
                     AwakeSleepSeconds = table.Column<int>(type: "integer", nullable: false),
-                    AvgHeartRate = table.Column<double>(type: "double precision", nullable: true),
-                    AvgSleepStress = table.Column<double>(type: "double precision", nullable: true),
+                    AvgHeartRate = table.Column<int>(type: "integer", nullable: false),
+                    AvgSleepStress = table.Column<int>(type: "integer", nullable: false),
+                    SleepStart = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    SleepEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -71,14 +74,32 @@ namespace LifeTracker.Migrations
                 columns: table => new
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
-                    Average = table.Column<int>(type: "integer", nullable: true),
-                    Max = table.Column<int>(type: "integer", nullable: true),
+                    Average = table.Column<int>(type: "integer", nullable: false),
+                    Max = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DailyStress", x => x.Date);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RoomClimateMeasurements",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CO2 = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Temperature = table.Column<float>(type: "real", nullable: false),
+                    Humidity = table.Column<float>(type: "real", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoomClimateMeasurements", x => x.ID);
                 });
 
             migrationBuilder.CreateTable(
@@ -93,7 +114,8 @@ namespace LifeTracker.Migrations
                     Humidity = table.Column<float>(type: "real", nullable: true),
                     WindspeedBft = table.Column<float>(type: "real", nullable: true),
                     AirPressure = table.Column<float>(type: "real", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -143,6 +165,9 @@ namespace LifeTracker.Migrations
 
             migrationBuilder.DropTable(
                 name: "HeartRateSample");
+
+            migrationBuilder.DropTable(
+                name: "RoomClimateMeasurements");
 
             migrationBuilder.DropTable(
                 name: "WeatherLogs");

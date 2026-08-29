@@ -50,12 +50,46 @@ namespace LifeTracker.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("ID");
 
                     b.HasIndex("Timestamp")
                         .IsDescending();
 
                     b.ToTable("ActivityWatchEvents");
+                });
+
+            modelBuilder.Entity("LifeTracker.Entities.ESP32.RoomClimateMeasurement", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("CO2")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<float>("Humidity")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Temperature")
+                        .HasColumnType("real");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("RoomClimateMeasurements");
                 });
 
             modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRate", b =>
@@ -66,13 +100,13 @@ namespace LifeTracker.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("Max")
+                    b.Property<int>("Max")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Min")
+                    b.Property<int>("Min")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("RestingRate")
+                    b.Property<int>("RestingRate")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -88,11 +122,11 @@ namespace LifeTracker.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
-                    b.Property<double?>("AvgHeartRate")
-                        .HasColumnType("double precision");
+                    b.Property<int>("AvgHeartRate")
+                        .HasColumnType("integer");
 
-                    b.Property<double?>("AvgSleepStress")
-                        .HasColumnType("double precision");
+                    b.Property<int>("AvgSleepStress")
+                        .HasColumnType("integer");
 
                     b.Property<int>("AwakeSleepSeconds")
                         .HasColumnType("integer");
@@ -108,6 +142,12 @@ namespace LifeTracker.Migrations
 
                     b.Property<int>("RemSleepSeconds")
                         .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("SleepEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("SleepStart")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("SleepTimeSeconds")
                         .HasColumnType("integer");
@@ -125,13 +165,13 @@ namespace LifeTracker.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
-                    b.Property<int?>("Average")
+                    b.Property<int>("Average")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("Max")
+                    b.Property<int>("Max")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -198,6 +238,9 @@ namespace LifeTracker.Migrations
                     b.Property<float?>("Temperature")
                         .HasColumnType("real")
                         .HasJsonPropertyName("temperature");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<float?>("WindspeedBft")
                         .HasColumnType("real")

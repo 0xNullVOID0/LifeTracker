@@ -118,7 +118,7 @@ bool getLocalTimeString(char* buffer, size_t maxLen) {
         Serial.println("Fout bij ophalen tijd");
         return false;
     }
-    strftime(buffer, maxLen, "%d-%m-%Y %H:%M:%S", &timeinfo);
+    strftime(buffer, maxLen, "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
     Serial.print("Tijd: ");
     Serial.println(buffer);
 
@@ -156,7 +156,7 @@ void sendClimateData(int co2, double temp, double humidity) {
     http.addHeader("Content-Type", "application/json");
 
     JsonDocument json;
-    json["TimestampString"] = timeBuffer;
+    json["Timestamp"] = timeBuffer;
     json["CO2"] = co2;
     json["Temperature"] = temp;
     json["Humidity"] = humidity;
