@@ -5,6 +5,7 @@ using LifeTracker.Endpoints;
 using LifeTracker.Entities.ESP32;
 using LifeTracker.Middleware;
 using LifeTracker.Services;
+using LifeTracker.Services.Background;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
@@ -25,6 +26,7 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHttpClient<BuienradarService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar"));
+builder.Services.AddHostedService<BuienradarBackgroundService>();
 
 builder.Services.AddHttpClient<ESP32Service>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ESP32RoomClimate"));

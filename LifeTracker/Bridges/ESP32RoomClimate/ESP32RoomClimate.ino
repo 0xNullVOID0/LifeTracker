@@ -158,8 +158,8 @@ void sendClimateData(int co2, double temp, double humidity) {
     JsonDocument json;
     json["Timestamp"] = timeBuffer;
     json["CO2"] = co2;
-    json["Temperature"] = temp;
-    json["Humidity"] = humidity;
+    json["temperature"] = temp;
+    json["humidity"] = humidity;
 
     char jsonBuffer[256];
     size_t n = serializeJson(json, jsonBuffer, sizeof(jsonBuffer));
