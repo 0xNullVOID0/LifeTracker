@@ -81,6 +81,18 @@ namespace LifeTracker;
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+        // Adjust column order in DB due to ClimateMeasurement already being an extension of BaseEntity 
+        modelBuilder.Entity<RoomClimateMeasurement>(entity =>
+        {
+            entity.Property(e => e.ID).HasColumnOrder(1);
+            entity.Property(e => e.Timestamp).HasColumnOrder(2);
+            entity.Property(e => e.CO2).HasColumnOrder(3);
+            entity.Property(e => e.Temperature).HasColumnOrder(4);
+            entity.Property(e => e.Humidity).HasColumnOrder(5);
+            entity.Property(e => e.CreatedAt).HasColumnOrder(6);
+            entity.Property(e => e.UpdatedAt).HasColumnOrder(7);
+        });
+
         }
 
     }

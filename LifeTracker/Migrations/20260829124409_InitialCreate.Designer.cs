@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260829122349_InitialCreate")]
+    [Migration("20260829124409_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -68,27 +68,34 @@ namespace LifeTracker.Migrations
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnOrder(1);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
                     b.Property<int>("CO2")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnOrder(3);
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(6);
 
                     b.Property<float>("Humidity")
-                        .HasColumnType("real");
+                        .HasColumnType("real")
+                        .HasColumnOrder(5);
 
                     b.Property<float>("Temperature")
-                        .HasColumnType("real");
+                        .HasColumnType("real")
+                        .HasColumnOrder(4);
 
                     b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(2);
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(7);
 
                     b.HasKey("ID");
 
