@@ -25,7 +25,4 @@ public class DailySleep : GarminEntity
 
     [DefaultValue(8)]
     public int AvgSleepStress { get; set; }
-
-    [DefaultValue(8.0)]
-    public double? AvgSleepStress { get; set; }
 }
