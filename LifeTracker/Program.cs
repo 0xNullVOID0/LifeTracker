@@ -47,7 +47,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString, sqlOptions =>
     {
-        sqlOptions.CommandTimeout(30); 
+        sqlOptions.CommandTimeout(30);
     }));
 
 
@@ -65,7 +65,7 @@ app.MapGarminEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    
+
     // add scalar for automated API documentation & and easy testing
     app.MapScalarApiReference(options =>
     {
@@ -85,7 +85,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
-app.MapGet("/buienradar", async (WeatherService weatherService) =>
 app.MapGet("/buienradar", async (BuienradarService buienradarService) =>
 {
     app.Logger.LogInformation("[API] Route: /buienradar");
@@ -121,6 +120,7 @@ app.MapPost("/API/room-climate", async (RoomClimateMeasurement roomClimate, ESP3
 })
 .WithName("PostRoomClimate");
 
+app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchService) =>
 {
     app.Logger.LogInformation("[API] Route: /activity-watch/all");
 
@@ -135,7 +135,7 @@ app.MapPost("/API/room-climate", async (RoomClimateMeasurement roomClimate, ESP3
         return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
     }
 })
-.WithName("FetchAllActivityWatchEvents");
+ .WithName("FetchAllActivityWatchEvents");
 
 app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchService) =>
 {

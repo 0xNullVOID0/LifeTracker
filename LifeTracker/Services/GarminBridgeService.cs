@@ -94,10 +94,7 @@ namespace LifeTracker.Services;
         return new GarminDay(date, heart, stress, sleep);
     }
 
-            return Results.Ok(new { heart, stress, sleep });
-        }
-
-        // Syncs all Garmin data from the official API via the python GarminConnect bridge and upserts into DB
+    // Syncs all Garmin data from the official API via the python GarminConnect bridge and upserts into DB
     public async Task<GarminDay> SyncAllDataByDay(DateOnly date)
         {
             var heart = await SyncHeartRateByDay(date);
