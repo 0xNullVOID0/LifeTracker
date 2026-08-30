@@ -3,22 +3,63 @@ using LifeTracker;
 using LifeTracker.Configuration;
 using LifeTracker.Endpoints;
 using LifeTracker.Entities.ESP32;
+using LifeTracker.Infrastructure;
 using LifeTracker.Middleware;
 using LifeTracker.Services;
 using LifeTracker.Services.Background;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, config) =>
     config.ReadFrom.Configuration(context.Configuration).Enrich.FromLogContext());
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.WebHost.UseUrls("http://0.0.0.0:5071"); // So ESP32 can reach backend from different IP outside localhost
+
+
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
+var JWT = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>()
+    ?? throw new InvalidOperationException("JWT section missing in appsettings");
+
+if (string.IsNullOrWhiteSpace(JWT.Key))
+    throw new InvalidOperationException("JWT:Key missing");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = JWT.Issuer,
+            ValidAudience = JWT.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWT.Key))
+        };
+    });
+
+
+// Set every route to auth JWT protected by default, .AllowAnonymous() on the exception routes for no auth required
+builder.Services.AddAuthorization(o =>
+{
+    o.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+});
+
+// Add and show auth routes and bearer headers to OpenAPI Scalar UI
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 
 // adds standardized JSON error responses
 builder.Services.AddProblemDetails();
@@ -53,37 +94,44 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-builder.WebHost.UseUrls("http://0.0.0.0:5071"); // So ESP32 can reach backend from different IP outside localhost
+if (app.Environment.IsDevelopment())
+    app.UseDeveloperExceptionPage();
+else
+    app.UseExceptionHandler();
+
+
+app.UseHttpsRedirection();
 app.UseMiddleware<DateQueryMiddleware>();
-app.MapHealthChecks("/health");
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapHealthChecks("/health").AllowAnonymous();
 app.MapGarminEndpoints();
 
-// TODO security, authentication for API
 
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
-    // add scalar for automated API documentation & and easy testing
+    app.MapOpenApi().AllowAnonymous(); 
     app.MapScalarApiReference(options =>
     {
-        // tell Scalar where to find the JSON spec using http to fix http/https mismatch when running docker
         options.WithOpenApiRoutePattern("/openapi/v1.json");
-    });
 
-    app.UseDeveloperExceptionPage(); // gives full stack traces for debugging
+        // Set Bearer options for OpenAPI to use JWT in Scalar UI
+        options.AddPreferredSecuritySchemes("Bearer");
+        options.AddHttpAuthentication("Bearer", auth =>
+        {
+            auth.Token = JwtTokenGenerator.Generate(JWT);
+    });
+    }).AllowAnonymous();
 
     app.Lifetime.ApplicationStarted.Register(() =>
     {
-        var url = "https://localhost:5071/scalar";
+        var url = "http://localhost:5071/scalar";
         Console.WriteLine($"\n→ Scalar UI: {url}\n");
     });
 }
-
-app.UseHttpsRedirection();
-app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapGet("/buienradar", async (BuienradarService buienradarService) =>
 {
@@ -118,7 +166,8 @@ app.MapPost("/API/room-climate", async (RoomClimateMeasurement roomClimate, ESP3
         return Results.Problem($"CRASH: {ex.Message}");
     }
 })
-.WithName("PostRoomClimate");
+// TODO use device key instead of JWT for esp32?
+.WithName("PostRoomClimate").AllowAnonymous(); // easier for now to not have ESP32 deal with JWT header tokens
 
 app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchService) =>
 {
@@ -154,6 +203,19 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
 })
 .WithName("FetchNewActivityWatchEvents");
 
+app.MapPost("/api/auth/token", (TokenRequest request) =>
+{
+    var password = JWT.Password;
+    if (string.IsNullOrWhiteSpace(password) || request.Password != password)
+        return Results.Unauthorized();
+
+    var token = JwtTokenGenerator.Generate(JWT);
+    return Results.Ok(new { token });
+}).AllowAnonymous().WithName("GenerateToken").WithSummary("Get JWT with demo/master password");
+
+//return Results.Ok(new { token = JwtTokenGenerator.GenerateToken(config, "Demo") });
+
+
 
 app.Logger.LogInformation("\n\n--------------------------------------------------");
 app.Logger.LogInformation("LifeTracker API started");
@@ -182,8 +244,10 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+
+
 // bind default route to scalar too
-app.MapGet("/", () => Results.Redirect("/scalar"))
-   .ExcludeFromDescription();
+app.MapGet("/", () => Results.Redirect("/scalar")).AllowAnonymous().ExcludeFromDescription();
 
 app.Run();
+
