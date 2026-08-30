@@ -374,4 +374,4 @@ FodyWeavers.xsd
 /LifeTracker/Services/GarminBridgeHostedService.cs
 /LifeTracker/Bridges/garmin-bridge/.idea/vcs.xml
 /LifeTracker/Bridges/garmin-bridge/.idea/workspace.xml
-LifeTracker/Bridges/ESP32RoomClimate/secrets.h
+/LifeTracker/Bridges/ESP32RoomClimate/secrets.h

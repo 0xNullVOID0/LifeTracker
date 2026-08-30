@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using LifeTracker.Dtos.Buienradar;
 using LifeTracker.Entities;
 using LifeTracker.Entities.ESP32;
 
@@ -23,22 +24,10 @@ public class BuienradarService
         var data = await _httpClient.GetFromJsonAsync<BuienradarResponse>(_httpClient.BaseAddress);
 
         // Get closest station
-        var station = data?.Actual?.BuienradarStationMeasurements
+        var station = data?.Actual?.StationMeasurements
             .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationId == 6278); // TODO make configurable
 
-        // basic debug console print
-        if (station is not null)
-        {
-            Console.WriteLine($"[{DateTime.Now:HH:mm}] Station {station.StationName}:");
-            Console.WriteLine($"Temp: {station.Temperature}°C");
-            Console.WriteLine($"Luchtvochtigheid: {station.Humidity}%");
-            Console.WriteLine($"Wind: {station.WindspeedBft} Bft");
-            Console.WriteLine($"Luchtdruk: {station.AirPressure} hPa");
-        }
-
-        // basic temp test save
         await SaveMeasurementAsync(station);
-
         return station;
     }
 
@@ -48,17 +37,4 @@ public class BuienradarService
         await _context.SaveChangesAsync();
     }
 }
-
-public class BuienradarResponse
-{
-    [JsonPropertyName("actual")]
-    public ActualData Actual { get; set; }
-}
-
-public class ActualData
-{
-    [JsonPropertyName("stationmeasurements")]
-    public List<BuienradarStationMeasurement> BuienradarStationMeasurements { get; set; }
-}
-
 

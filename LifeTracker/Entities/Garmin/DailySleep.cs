@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-﻿namespace LifeTracker.Entities.Garmin;
+namespace LifeTracker.Entities.Garmin;
 
 public class DailySleep : GarminEntity
 

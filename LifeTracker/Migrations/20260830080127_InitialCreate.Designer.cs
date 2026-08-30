@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260830073054_InitialCreate")]
+    [Migration("20260830080127_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -53,6 +53,9 @@ namespace LifeTracker.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("ID");
 
                     b.HasIndex("Timestamp")
@@ -69,7 +72,7 @@ namespace LifeTracker.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
-                    b.Property<float>("AirPressure")
+                    b.Property<float?>("AirPressure")
                         .HasColumnType("real")
                         .HasJsonPropertyName("airpressure");
 
@@ -80,6 +83,18 @@ namespace LifeTracker.Migrations
                         .HasColumnType("real")
                         .HasJsonPropertyName("humidity");
 
+                    b.Property<float?>("Precipitation")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("precipitation");
+
+                    b.Property<float?>("RainFallLast24Hour")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("rainFallLast24Hour");
+
+                    b.Property<float?>("RainFallLastHour")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("rainFallLastHour");
+
                     b.Property<int>("StationId")
                         .HasColumnType("integer")
                         .HasJsonPropertyName("stationid");
@@ -89,12 +104,24 @@ namespace LifeTracker.Migrations
                         .HasColumnType("text")
                         .HasJsonPropertyName("stationname");
 
+                    b.Property<float?>("SunPower")
+                        .HasColumnType("real")
+                        .HasJsonPropertyName("sunpower");
+
                     b.Property<float>("Temperature")
                         .HasColumnType("real")
                         .HasJsonPropertyName("temperature");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("WeatherDescription")
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("weatherdescription");
+
+                    b.Property<string>("WindDirection")
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("winddirection");
 
                     b.Property<float?>("WindspeedBft")
                         .HasColumnType("real")

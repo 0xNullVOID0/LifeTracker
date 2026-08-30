@@ -23,7 +23,8 @@ namespace LifeTracker.Migrations
                     Duration = table.Column<double>(type: "double precision", nullable: false),
                     App = table.Column<string>(type: "text", nullable: false),
                     Title = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -38,8 +39,14 @@ namespace LifeTracker.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     StationId = table.Column<int>(type: "integer", nullable: false),
                     StationName = table.Column<string>(type: "text", nullable: false),
+                    WeatherDescription = table.Column<string>(type: "text", nullable: true),
+                    WindDirection = table.Column<string>(type: "text", nullable: true),
+                    Precipitation = table.Column<float>(type: "real", nullable: true),
+                    SunPower = table.Column<float>(type: "real", nullable: true),
+                    RainFallLastHour = table.Column<float>(type: "real", nullable: true),
+                    RainFallLast24Hour = table.Column<float>(type: "real", nullable: true),
                     WindspeedBft = table.Column<float>(type: "real", nullable: true),
-                    AirPressure = table.Column<float>(type: "real", nullable: false),
+                    AirPressure = table.Column<float>(type: "real", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Temperature = table.Column<float>(type: "real", nullable: false),
