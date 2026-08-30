@@ -3,5 +3,6 @@
     <File Path=".editorconfig" />
     <File Path="LICENSE.txt" />
   </Folder>
+  <Project Path="LifeTracker.Tests/LifeTracker.Tests.csproj" />
   <Project Path="LifeTracker/LifeTracker.csproj" />
 </Solution>

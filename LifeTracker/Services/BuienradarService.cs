@@ -17,21 +17,24 @@ public class BuienradarService
         _context = context;
     }
 
-
-    public async Task<BuienradarStationMeasurement?> GetBuienradarDataAsync()
+    // TODO use buienradars own timestamp to decide if adding new entry or not 
+    // timestamp	"2026-08-30T10:30:00"
+    // TODO add station id/name as parameter
+    public async Task<BuienradarStationMeasurement?> SyncStationMeasurement()
     {
         // Get JSON weather data from buienradar
         var data = await _httpClient.GetFromJsonAsync<BuienradarResponse>(_httpClient.BaseAddress);
 
         // Get closest station
-        var station = data?.Actual?.StationMeasurements
+        var station = data?.Actual?.StationMeasurements?
             .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationId == 6278); // TODO make configurable
 
-        await SaveMeasurementAsync(station);
+        if (station != null) 
+            await SaveMeasurement(station);
         return station;
     }
 
-    public async Task SaveMeasurementAsync(BuienradarStationMeasurement measurement)
+    public async Task SaveMeasurement(BuienradarStationMeasurement measurement)
     {
         _context.BuienradarStationMeasurements.Add(measurement);
         await _context.SaveChangesAsync();

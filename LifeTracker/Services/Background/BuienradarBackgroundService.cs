@@ -28,7 +28,7 @@ public class BuienradarBackgroundService : BackgroundService
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var BuienradarService = scope.ServiceProvider.GetRequiredService<BuienradarService>();
-                    await BuienradarService.GetBuienradarDataAsync();
+                    await BuienradarService.SyncStationMeasurement();
                 }
 
             }
