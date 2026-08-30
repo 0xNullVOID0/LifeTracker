@@ -1,6 +1,6 @@
 ﻿namespace LifeTracker.Configuration;
 
-public class ActivityWatchSettings
+public class ActivityWatchOptions
 {
     public const string SectionName = "APIs:ActivityWatch";
 

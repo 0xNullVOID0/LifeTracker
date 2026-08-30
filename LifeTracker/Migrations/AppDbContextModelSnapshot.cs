@@ -169,7 +169,7 @@ namespace LifeTracker.Migrations
                     b.ToTable("RoomClimateMeasurements");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRate", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRates", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -191,10 +191,10 @@ namespace LifeTracker.Migrations
 
                     b.HasKey("Date");
 
-                    b.ToTable("DailyHeartRate");
+                    b.ToTable("DailyHeartRates");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailySleep", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailySleeps", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -228,10 +228,10 @@ namespace LifeTracker.Migrations
 
                     b.HasKey("Date");
 
-                    b.ToTable("DailySleep");
+                    b.ToTable("DailySleeps");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyStress", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyStresses", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -250,10 +250,10 @@ namespace LifeTracker.Migrations
 
                     b.HasKey("Date");
 
-                    b.ToTable("DailyStress");
+                    b.ToTable("DailyStresses");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSample", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSamples", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -275,21 +275,21 @@ namespace LifeTracker.Migrations
 
                     b.HasKey("Date", "Timestamp");
 
-                    b.ToTable("HeartRateSample");
+                    b.ToTable("HeartRateSamples");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSample", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSamples", b =>
                 {
-                    b.HasOne("LifeTracker.Entities.Garmin.DailyHeartRate", "DailyHeartRate")
+                    b.HasOne("LifeTracker.Entities.Garmin.DailyHeartRates", "DailyHeartRates")
                         .WithMany("Samples")
                         .HasForeignKey("Date")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DailyHeartRate");
+                    b.Navigation("DailyHeartRates");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRate", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRates", b =>
                 {
                     b.Navigation("Samples");
                 });

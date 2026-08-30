@@ -58,7 +58,7 @@ namespace LifeTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DailyHeartRate",
+                name: "DailyHeartRates",
                 columns: table => new
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
@@ -74,7 +74,7 @@ namespace LifeTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DailySleep",
+                name: "DailySleeps",
                 columns: table => new
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
@@ -94,7 +94,7 @@ namespace LifeTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DailyStress",
+                name: "DailyStresses",
                 columns: table => new
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
@@ -127,7 +127,7 @@ namespace LifeTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "HeartRateSample",
+                name: "HeartRateSamples",
                 columns: table => new
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
@@ -143,7 +143,7 @@ namespace LifeTracker.Migrations
                     table.ForeignKey(
                         name: "FK_HeartRateSample_DailyHeartRate_Date",
                         column: x => x.Date,
-                        principalTable: "DailyHeartRate",
+                        principalTable: "DailyHeartRates",
                         principalColumn: "Date",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -165,19 +165,19 @@ namespace LifeTracker.Migrations
                 name: "BuienradarStationMeasurements");
 
             migrationBuilder.DropTable(
-                name: "DailySleep");
+                name: "DailySleeps");
 
             migrationBuilder.DropTable(
-                name: "DailyStress");
+                name: "DailyStresses");
 
             migrationBuilder.DropTable(
-                name: "HeartRateSample");
+                name: "HeartRateSamples");
 
             migrationBuilder.DropTable(
                 name: "RoomClimateMeasurements");
 
             migrationBuilder.DropTable(
-                name: "DailyHeartRate");
+                name: "DailyHeartRates");
         }
     }
 }

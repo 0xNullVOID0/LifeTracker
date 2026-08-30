@@ -10,10 +10,10 @@ public class ActivityWatchService
 {
     private readonly HttpClient _httpClient;
     private readonly AppDbContext _context;
-    private readonly ActivityWatchSettings _settings;
+    private readonly ActivityWatchOptions _settings;
     private readonly ILogger<ActivityWatchService> _logger;
 
-    public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchSettings> settings, ILogger<ActivityWatchService> logger)
+    public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchOptions> settings, ILogger<ActivityWatchService> logger)
     {
         _httpClient = httpclient;
         _context = context;

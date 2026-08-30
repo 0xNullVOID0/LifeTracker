@@ -22,9 +22,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, config) =>
     config.ReadFrom.Configuration(context.Configuration).Enrich.FromLogContext());
 
-builder.WebHost.UseUrls("http://0.0.0.0:5071"); // So ESP32 can reach backend from different IP outside localhost
-
-
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
 var JWT = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>()
@@ -72,8 +69,8 @@ builder.Services.AddHostedService<BuienradarBackgroundService>();
 builder.Services.AddHttpClient<ESP32Service>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ESP32RoomClimate"));
 
-builder.Services.Configure<ActivityWatchSettings>(
-    builder.Configuration.GetSection(ActivityWatchSettings.SectionName));
+builder.Services.Configure<ActivityWatchOptions>(
+    builder.Configuration.GetSection(ActivityWatchOptions.SectionName));
 
 builder.Services.AddHttpClient<ActivityWatchService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ActivityWatch:BaseUrl"));
@@ -97,7 +94,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 else
+{
     app.UseExceptionHandler();
+    app.UseHttpsRedirection(); // only use HTTPS in production
+}
 
 
 app.UseHttpsRedirection();
@@ -128,8 +128,8 @@ if (app.Environment.IsDevelopment())
 
     app.Lifetime.ApplicationStarted.Register(() =>
     {
-        var url = "http://localhost:5071/scalar";
-        Console.WriteLine($"\n→ Scalar UI: {url}\n");
+        var url = "http://0.0.0.0:5071/scalar";
+        Console.WriteLine($"\nView and test all endpoints in Scalar UI: {url}\n");
     });
 }
 
@@ -145,11 +145,12 @@ app.MapGet("/buienradar", async (BuienradarService buienradarService) =>
     catch (Exception ex)
     {
         app.Logger.LogError(ex, "[API] /buienradar ERROR");
-        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+        return Results.Problem($"CRASH: {ex.Message}");
     }
 })
 .WithName("GetBuienradar");
 
+// TODO fix route getting bad wrong or not filled in json values again  and crashing application
 app.MapPost("/API/room-climate", async (RoomClimateMeasurement roomClimate, ESP32Service esp32Service) =>
 {
     app.Logger.LogInformation("[API] Route: /API/room-climate ESP32 data received");
@@ -181,7 +182,7 @@ app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchServi
     catch (Exception ex)
     {
         app.Logger.LogError(ex, "[API] activity-watch/all ERROR");
-        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+        return Results.Problem($"CRASH: {ex.Message}");
     }
 })
  .WithName("FetchAllActivityWatchEvents");
@@ -198,7 +199,7 @@ app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchServi
     catch (Exception ex)
     {
         app.Logger.LogError(ex, "[API] activity-watch/new ERROR");
-        return Results.Problem($"CRASH: {ex.Message} --- STACKTRACE: {ex.StackTrace}");
+        return Results.Problem($"CRASH: {ex.Message}");
     }
 })
 .WithName("FetchNewActivityWatchEvents");

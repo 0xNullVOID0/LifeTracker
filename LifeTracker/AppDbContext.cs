@@ -14,10 +14,10 @@ public class AppDbContext : DbContext
     public DbSet<BuienradarStationMeasurement> BuienradarStationMeasurements { get; set; }
     public DbSet<RoomClimateMeasurement> RoomClimateMeasurements { get; set; }
     public DbSet<ActivityEvent> ActivityWatchEvents { get; set; }
-    public DbSet<HeartRateSample> HeartRateSample { get; set; }
-    public DbSet<DailyHeartRate> DailyHeartRate { get; set; }
-    public DbSet<DailyStress> DailyStress { get; set; }
-    public DbSet<DailySleep> DailySleep { get; set; }
+    public DbSet<HeartRateSample> HeartRateSamples { get; set; }
+    public DbSet<DailyHeartRate> DailyHeartRates { get; set; }
+    public DbSet<DailyStress> DailyStresses { get; set; }
+    public DbSet<DailySleep> DailySleeps { get; set; }
 
     // TODO proper db health checks, checking if schemas are properly setup even if db is running can still fail if schema is not setup properly
     // TODO account stuff, rn its just single user hardcoded, stuff like that should be in a separate table and linked to the data, so multiple users can use the same db, "updatedby/createdby", account id linked to every or the proper db entries and such

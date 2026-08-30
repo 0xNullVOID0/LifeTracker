@@ -73,13 +73,13 @@ namespace LifeTracker.Services;
         }
 
     public async Task<DailyHeartRate?> GetHeartRateByDay(DateOnly date) =>
-        await _context.DailyHeartRate.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
+        await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
 
     public async Task<DailyStress?> GetStressByDay(DateOnly date) =>
-        await _context.DailyStress.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+        await _context.DailyStresses.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
 
         public async Task<DailySleep?> GetSleepByDay(DateOnly date) =>
-            await _context.DailySleep.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+            await _context.DailySleeps.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
 
         // Gets all Garmin data from DB by date
     public async Task<GarminDay?> GetAllDataByDay(DateOnly date)
@@ -151,7 +151,7 @@ namespace LifeTracker.Services;
             try
             {
                 // Check if a record already exists for this date including possible child HeartRateSamples
-                var existing = await _context.DailyHeartRate
+                var existing = await _context.DailyHeartRates
                     .Include(d => d.Samples)
                     .FirstOrDefaultAsync(d => d.Date == dailyHeart.Date);
 
@@ -163,7 +163,7 @@ namespace LifeTracker.Services;
                     existing.Max = dailyHeart.Max;
 
                     // Delete old samples from the context to prevent orphaned records/foreign key conflicts
-                    _context.HeartRateSample.RemoveRange(existing.Samples);
+                    _context.HeartRateSamples.RemoveRange(existing.Samples);
 
                     // Attach the new sample list
                     existing.Samples = dailyHeart.Samples;
@@ -171,7 +171,7 @@ namespace LifeTracker.Services;
                 else
                 {
                     // Insert new entity along with its samples
-                    _context.DailyHeartRate.Add(dailyHeart);
+                    _context.DailyHeartRates.Add(dailyHeart);
                 }
 
                 await _context.SaveChangesAsync();
@@ -195,7 +195,7 @@ namespace LifeTracker.Services;
 
             try
             {
-                var existing = await _context.DailySleep.FirstOrDefaultAsync(x => x.Date == date);
+                var existing = await _context.DailySleeps.FirstOrDefaultAsync(x => x.Date == date);
 
                 // TODO handle multiple sleep per day, checkout naps too 
                 // update existing values
@@ -213,7 +213,7 @@ namespace LifeTracker.Services;
                 }
                 else
                 {
-                    _context.DailySleep.Add(dailySleep);
+                    _context.DailySleeps.Add(dailySleep);
                 }
 
                 // map incoming DTOs into a lookup dictionary by timestamp
@@ -227,7 +227,7 @@ namespace LifeTracker.Services;
                     var timestamps = incomingSamples.Keys.ToList();
 
                     // find any existing HeartRateSamples in DB by timestamp
-                    var existingSamples = await _context.HeartRateSample
+                    var existingSamples = await _context.HeartRateSamples
                         .Where(s => s.Date == date && timestamps.Contains(s.Timestamp))
                         .ToListAsync();
 
@@ -251,7 +251,7 @@ namespace LifeTracker.Services;
                     if (newSamples.Count > 0)
                     {
                         // TODO if dailyheartrate for given date doesnt exist "yet" while fetching sleep for that date first we get error so always fetch dailyheart first but still catch error evne though it prob would never happen with how data would properly be fetched in order with normal use
-                        _context.HeartRateSample.AddRange(newSamples);
+                        _context.HeartRateSamples.AddRange(newSamples);
                     }
                 }
 
@@ -271,7 +271,7 @@ namespace LifeTracker.Services;
 
             try
             {
-                var existing = await _context.DailyStress.FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
+                var existing = await _context.DailyStresses.FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
 
                 // Update record if already exists
                 if (existing is not null)
@@ -282,7 +282,7 @@ namespace LifeTracker.Services;
                 }
                 else
                 {
-                    _context.DailyStress.Add(dailyStress);
+                    _context.DailyStresses.Add(dailyStress);
                 }
 
                 await _context.SaveChangesAsync();
