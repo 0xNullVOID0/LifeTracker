@@ -93,6 +93,25 @@ public class AppDbContext : DbContext
             entity.Property(e => e.UpdatedAt).HasColumnOrder(7);
         });
 
+        modelBuilder.Entity<BuienradarStationMeasurement>(entity =>
+        {
+            entity.Property(e => e.ID).HasColumnOrder(1);
+            entity.Property(e => e.StationId).HasColumnOrder(2);
+            entity.Property(e => e.StationName).HasColumnOrder(3);
+            entity.Property(e => e.WeatherDescription).HasColumnOrder(4);
+            entity.Property(e => e.Temperature).HasColumnOrder(5);
+            entity.Property(e => e.Humidity).HasColumnOrder(6);
+            entity.Property(e => e.WindDirection).HasColumnOrder(7);
+            entity.Property(e => e.Precipitation).HasColumnOrder(8);
+            entity.Property(e => e.SunPower).HasColumnOrder(9);
+            entity.Property(e => e.RainFallLastHour).HasColumnOrder(10);
+            entity.Property(e => e.RainFallLast24Hour).HasColumnOrder(11);
+            entity.Property(e => e.WindspeedBft).HasColumnOrder(12);
+            entity.Property(e => e.AirPressure).HasColumnOrder(13);
+            entity.Property(e => e.CreatedAt).HasColumnOrder(15);
+            entity.Property(e => e.UpdatedAt).HasColumnOrder(16);
+        });
+
     }
 
 }

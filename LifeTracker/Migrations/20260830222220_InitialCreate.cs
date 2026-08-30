@@ -40,6 +40,8 @@ namespace LifeTracker.Migrations
                     StationId = table.Column<int>(type: "integer", nullable: false),
                     StationName = table.Column<string>(type: "text", nullable: false),
                     WeatherDescription = table.Column<string>(type: "text", nullable: true),
+                    Temperature = table.Column<float>(type: "real", nullable: false),
+                    Humidity = table.Column<float>(type: "real", nullable: false),
                     WindDirection = table.Column<string>(type: "text", nullable: true),
                     Precipitation = table.Column<float>(type: "real", nullable: true),
                     SunPower = table.Column<float>(type: "real", nullable: true),
@@ -48,9 +50,7 @@ namespace LifeTracker.Migrations
                     WindspeedBft = table.Column<float>(type: "real", nullable: true),
                     AirPressure = table.Column<float>(type: "real", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    Temperature = table.Column<float>(type: "real", nullable: false),
-                    Humidity = table.Column<float>(type: "real", nullable: false)
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -70,7 +70,7 @@ namespace LifeTracker.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DailyHeartRate", x => x.Date);
+                    table.PrimaryKey("PK_DailyHeartRates", x => x.Date);
                 });
 
             migrationBuilder.CreateTable(
@@ -90,7 +90,7 @@ namespace LifeTracker.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DailySleep", x => x.Date);
+                    table.PrimaryKey("PK_DailySleeps", x => x.Date);
                 });
 
             migrationBuilder.CreateTable(
@@ -105,7 +105,7 @@ namespace LifeTracker.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DailyStress", x => x.Date);
+                    table.PrimaryKey("PK_DailyStresses", x => x.Date);
                 });
 
             migrationBuilder.CreateTable(
@@ -139,9 +139,9 @@ namespace LifeTracker.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_HeartRateSample", x => new { x.Date, x.Timestamp });
+                    table.PrimaryKey("PK_HeartRateSamples", x => new { x.Date, x.Timestamp });
                     table.ForeignKey(
-                        name: "FK_HeartRateSample_DailyHeartRate_Date",
+                        name: "FK_HeartRateSamples_DailyHeartRates_Date",
                         column: x => x.Date,
                         principalTable: "DailyHeartRates",
                         principalColumn: "Date",

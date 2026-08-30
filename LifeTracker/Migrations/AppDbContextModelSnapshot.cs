@@ -65,63 +65,78 @@ namespace LifeTracker.Migrations
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnOrder(1);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
 
                     b.Property<float?>("AirPressure")
                         .HasColumnType("real")
+                        .HasColumnOrder(13)
                         .HasJsonPropertyName("airpressure");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(15);
 
                     b.Property<float>("Humidity")
                         .HasColumnType("real")
+                        .HasColumnOrder(6)
                         .HasJsonPropertyName("humidity");
 
                     b.Property<float?>("Precipitation")
                         .HasColumnType("real")
+                        .HasColumnOrder(8)
                         .HasJsonPropertyName("precipitation");
 
                     b.Property<float?>("RainFallLast24Hour")
                         .HasColumnType("real")
+                        .HasColumnOrder(11)
                         .HasJsonPropertyName("rainFallLast24Hour");
 
                     b.Property<float?>("RainFallLastHour")
                         .HasColumnType("real")
+                        .HasColumnOrder(10)
                         .HasJsonPropertyName("rainFallLastHour");
 
                     b.Property<int>("StationId")
                         .HasColumnType("integer")
+                        .HasColumnOrder(2)
                         .HasJsonPropertyName("stationid");
 
                     b.Property<string>("StationName")
                         .IsRequired()
                         .HasColumnType("text")
+                        .HasColumnOrder(3)
                         .HasJsonPropertyName("stationname");
 
                     b.Property<float?>("SunPower")
                         .HasColumnType("real")
+                        .HasColumnOrder(9)
                         .HasJsonPropertyName("sunpower");
 
                     b.Property<float>("Temperature")
                         .HasColumnType("real")
+                        .HasColumnOrder(5)
                         .HasJsonPropertyName("temperature");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(16);
 
                     b.Property<string>("WeatherDescription")
                         .HasColumnType("text")
+                        .HasColumnOrder(4)
                         .HasJsonPropertyName("weatherdescription");
 
                     b.Property<string>("WindDirection")
                         .HasColumnType("text")
+                        .HasColumnOrder(7)
                         .HasJsonPropertyName("winddirection");
 
                     b.Property<float?>("WindspeedBft")
                         .HasColumnType("real")
+                        .HasColumnOrder(12)
                         .HasJsonPropertyName("windspeedBft");
 
                     b.HasKey("ID");
@@ -169,7 +184,7 @@ namespace LifeTracker.Migrations
                     b.ToTable("RoomClimateMeasurements");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRates", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRate", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -194,7 +209,7 @@ namespace LifeTracker.Migrations
                     b.ToTable("DailyHeartRates");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailySleeps", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailySleep", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -231,7 +246,7 @@ namespace LifeTracker.Migrations
                     b.ToTable("DailySleeps");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyStresses", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyStress", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -253,7 +268,7 @@ namespace LifeTracker.Migrations
                     b.ToTable("DailyStresses");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSamples", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSample", b =>
                 {
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -278,18 +293,18 @@ namespace LifeTracker.Migrations
                     b.ToTable("HeartRateSamples");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSamples", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.HeartRateSample", b =>
                 {
-                    b.HasOne("LifeTracker.Entities.Garmin.DailyHeartRates", "DailyHeartRates")
+                    b.HasOne("LifeTracker.Entities.Garmin.DailyHeartRate", "DailyHeartRate")
                         .WithMany("Samples")
                         .HasForeignKey("Date")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DailyHeartRates");
+                    b.Navigation("DailyHeartRate");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRates", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Garmin.DailyHeartRate", b =>
                 {
                     b.Navigation("Samples");
                 });

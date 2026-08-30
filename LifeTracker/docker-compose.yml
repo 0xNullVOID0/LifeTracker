@@ -46,8 +46,8 @@ services:
       - "5071:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword
-      - APIs__GarminConnect=http://garmin_bridge:9002/garmin/
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword
+      APIs__GarminConnect: http://garmin_bridge:9002/garmin/
     depends_on:
       db:
         condition: service_healthy
