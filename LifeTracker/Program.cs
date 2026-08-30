@@ -49,19 +49,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 
-// Set every route to auth JWT protected by default, .AllowAnonymous() on the exception routes for no auth required
+// Set every route to auth JWT protected by default, .AllowAnonymous() on the unprotected exception routes
 builder.Services.AddAuthorization(o =>
 {
     o.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
 
-// Add and show auth routes and bearer headers to OpenAPI Scalar UI
+// Register bearer scheme and only show auth required on protected routes
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    options.AddOperationTransformer<BearerOperationTransformer>();
 });
 
-// adds standardized JSON error responses
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
 
