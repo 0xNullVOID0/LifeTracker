@@ -96,6 +96,18 @@ public static class GarminEndpoints
           .Produces<BackfillResult>(StatusCodes.Status200OK);
 
 
+        // TODO add optional start and or end range to it
+        group.MapGet("/all", async (GarminBridgeService service) =>
+        {
+            var data = await service.GetAllGarminDays();
+            return data.Count > 0 ? Results.Ok(data) : Results.NoContent();
+        })
+        .WithName("GetAllGarminDays")
+        .WithSummary("Get all stored Garmin days data from DB")
+        .WithDescription("Returns every day that has heart, stress and or sleep from DB")
+        .Produces<IReadOnlyList<GarminDay>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status204NoContent);
+
         group.MapGet("/day", async (DateOnly? date, GarminBridgeService service) =>
         {
             if (ValidateDate(date, out var targetDate) is { } error)

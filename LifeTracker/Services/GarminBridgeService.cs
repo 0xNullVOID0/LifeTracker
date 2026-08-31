@@ -294,6 +294,38 @@ namespace LifeTracker.Services;
             }
         }
 
+    public async Task<IReadOnlyList<GarminDay>> GetAllGarminDays()
+    {
+        var heartRates = await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).ToListAsync();
+        var stresses = await _context.DailyStresses.AsNoTracking().ToListAsync();
+        var sleeps = await _context.DailySleeps.AsNoTracking().ToListAsync();
+
+        // index records by date for fast lookup and combining
+        var heartByDate = heartRates.ToDictionary(x => x.Date);
+        var stressByDate = stresses.ToDictionary(x => x.Date);
+        var sleepByDate = sleeps.ToDictionary(x => x.Date);
+
+        // get all possible dates across the entities, newest to oldest
+        var dates = heartByDate.Keys.Union(stressByDate.Keys).Union(sleepByDate.Keys).OrderByDescending(d => d);
+
+        var days = new List<GarminDay>();
+        foreach (var date in dates)
+        {
+            heartByDate.TryGetValue(date, out var heart);
+            stressByDate.TryGetValue(date, out var stress);
+            sleepByDate.TryGetValue(date, out var sleep);
+
+            // skip entries where both heart and stress are null, sleep can be nullable so its not required
+            if (heart is null && stress is null)
+                continue;
+
+            days.Add(new GarminDay(date, heart, stress, sleep));
+        }
+
+        return days;
+    }
+        
+
         internal static DailyHeartRate MapToEntity(DailyHeartRateDto dto) => new()
         {
             Date = dto.CalendarDate,
