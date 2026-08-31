@@ -17,16 +17,18 @@ services:
       retries: 5
 
   garmin_bridge:
+    profiles: ["garmin"]
     build:
-      context: ./Bridges/garmin_bridge
+      context: ./LifeTracker/Bridges/garmin_bridge
       dockerfile: Dockerfile
     container_name: lifetracker-garmin-bridge
     ports:
       - "9002:9002"
     env_file:
-      - ./Bridges/garmin_bridge/.env
-    environment:        # auth token
-      GARMIN_TOKEN_DIR: /data/garminconnect 
+      - path: ./LifeTracker/Bridges/garmin_bridge/.env
+        required: false
+    environment:
+      GARMIN_TOKEN_DIR: /data/garminconnect
     volumes:
       - garmin_tokens:/data/garminconnect
     healthcheck:
@@ -39,20 +41,25 @@ services:
 
   api:
     build:
-      context: .
+      context: ./LifeTracker
       dockerfile: Dockerfile
     container_name: lifetracker-api
     ports:
       - "5071:8080"
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Demo
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword
       APIs__GarminConnect: http://garmin_bridge:9002/garmin/
+      JWT__Key: "DefaultDemoPlaceholderSecretKeyForLifeTrackerJWT" 
+      JWT__Issuer: "LifeTrackerAPI"
+      JWT__Audience: "LifeTrackerClient"
+      JWT__Password: "demo"
     depends_on:
       db:
         condition: service_healthy
       garmin_bridge:
         condition: service_healthy
+        required: false
     restart: unless-stopped
 
 volumes:
