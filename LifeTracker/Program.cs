@@ -108,7 +108,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health").AllowAnonymous();
+app.MapBuienradarEndpoints();
+app.MapRoomClimateEndpoints();
+app.MapActivityWatchEndpoints();
 app.MapGarminEndpoints();
+
 
 
 if (app.Environment.IsDevelopment())
@@ -133,77 +137,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.MapGet("/buienradar", async (BuienradarService buienradarService) =>
-{
-    app.Logger.LogInformation("[API] Route: /buienradar");
-
-    try
-    {
-        var station_data = await buienradarService.SyncStationMeasurement();
-        return station_data is not null ? Results.Ok(station_data) : Results.NotFound();
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "[API] /buienradar ERROR");
-        return Results.Problem($"CRASH: {ex.Message}");
-    }
-})
-.WithName("GetBuienradar");
-
-// TODO fix route getting bad wrong or not filled in json values again  and crashing application
-app.MapPost("/API/room-climate", async (RoomClimateMeasurement roomClimate, ESP32Service esp32Service) =>
-{
-    app.Logger.LogInformation("[API] Route: /API/room-climate ESP32 data received");
-
-    try
-    {
-        await esp32Service.SaveRoomClimate(roomClimate);
-
-        return Results.Ok(new { success = true, message = "Saved RoomClimateMeasurement measurement" });
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "[API] /API/room-climate ERROR");
-        return Results.Problem($"CRASH: {ex.Message}");
-    }
-})
-// TODO use device key instead of JWT for esp32?
-.WithName("PostRoomClimate").AllowAnonymous(); // easier for now to not have ESP32 deal with JWT header tokens
-
-app.MapGet("/activity-watch/all", async (ActivityWatchService activityWatchService) =>
-{
-    app.Logger.LogInformation("[API] Route: /activity-watch/all");
-
-    try
-    {
-        var activity_data = await activityWatchService.FetchBucketEvents();
-        return activity_data is not null ? Results.Ok(activity_data) : Results.NotFound();
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "[API] activity-watch/all ERROR");
-        return Results.Problem($"CRASH: {ex.Message}");
-    }
-})
- .WithName("FetchAllActivityWatchEvents");
-
-app.MapGet("/activity-watch/new", async (ActivityWatchService activityWatchService) =>
-{
-    app.Logger.LogInformation("[API] Route: /activity-watch/new");
-
-    try
-    {
-        var activity_data = await activityWatchService.FetchNewBucketEvents();
-        return activity_data is not null ? Results.Ok(activity_data) : Results.NotFound();
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "[API] activity-watch/new ERROR");
-        return Results.Problem($"CRASH: {ex.Message}");
-    }
-})
-.WithName("FetchNewActivityWatchEvents");
-
 app.MapPost("/api/auth/token", (TokenRequest request) =>
 {
     var password = JWT.Password;
@@ -216,8 +149,6 @@ app.MapPost("/api/auth/token", (TokenRequest request) =>
 
 //return Results.Ok(new { token = JwtTokenGenerator.GenerateToken(config, "Demo") });
 
-
-
 app.Logger.LogInformation("\n\n--------------------------------------------------");
 app.Logger.LogInformation("LifeTracker API started");
 app.Logger.LogInformation("--------------------------------------------------\n");
@@ -228,6 +159,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+    if (db.Database.IsRelational()) // a check for more extensive integration tests later
+    {
     const int attempts = 10;
     for (var i = 1; i <= attempts; i++)
     {
@@ -244,7 +177,7 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
-
+}
 
 
 // bind default route to scalar too
