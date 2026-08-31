@@ -294,7 +294,7 @@ namespace LifeTracker.Services;
             }
         }
 
-        private static DailyHeartRate MapToEntity(DailyHeartRateDto dto) => new()
+        internal static DailyHeartRate MapToEntity(DailyHeartRateDto dto) => new()
         {
             Date = dto.CalendarDate,
             RestingRate = dto.RestingHeartRate,
@@ -311,14 +311,14 @@ namespace LifeTracker.Services;
                 }).ToList() ?? new List<HeartRateSample>()
         };
 
-        private static DailyStress MapToEntity(DailyStressDto dto) => new()
+        internal static DailyStress MapToEntity(DailyStressDto dto) => new()
         {
             Date = dto.CalendarDate,
             Average = dto.AvgStressLevel,
             Max = dto.MaxStressLevel,
         };
 
-        private static DailySleep MapToEntity(SleepResponseDto dto)
+        internal static DailySleep MapToEntity(SleepResponseDto dto)
         {
             var d = dto.DailySleep;
             var date = d.CalendarDate;
