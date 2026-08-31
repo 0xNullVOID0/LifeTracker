@@ -115,7 +115,7 @@ app.MapGarminEndpoints();
 
 
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
 {
     app.MapOpenApi().AllowAnonymous(); 
     app.MapScalarApiReference(options =>
@@ -136,6 +136,8 @@ if (app.Environment.IsDevelopment())
         Console.WriteLine($"\nView and test all endpoints in Scalar UI: {url}\n");
     });
 }
+
+
 
 app.MapPost("/api/auth/token", (TokenRequest request) =>
 {
@@ -177,6 +179,13 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
+
+    await DemoGarminSeeder.SeedIfEmptyAsync(db, app.Logger);
+
+    if (app.Environment.IsEnvironment("Demo"))
+    {
+        await DemoGarminSeeder.SeedIfEmptyAsync(db, app.Logger);
+    }
 }
 
 
