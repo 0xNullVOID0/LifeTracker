@@ -180,8 +180,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-    await DemoGarminSeeder.SeedIfEmptyAsync(db, app.Logger);
-
     if (app.Environment.IsEnvironment("Demo"))
     {
         await DemoGarminSeeder.SeedIfEmptyAsync(db, app.Logger);

@@ -21,12 +21,13 @@ public class ActivityWatchService
         _logger = logger;
     }
 
-    public async Task<List<ActivityEvent>> FetchBucketEvents()
+
+    public async Task<List<ActivityEvent>?> SyncBucketEvents()
     {
-        return await FetchBucketEvents(_settings.BucketID);
+        return await SyncBucketEvents(_options.BucketID);
     }
 
-    public async Task<List<ActivityEvent>> FetchBucketEvents(string bucketID)
+    public async Task<List<ActivityEvent>?> SyncBucketEvents(string bucketID)
     {
         string url = $"buckets/{bucketID}/events";
 
@@ -34,7 +35,7 @@ public class ActivityWatchService
         var events_dtos = await _httpClient.GetFromJsonAsync<List<ActivityEventDto>>(url);
 
         if (events_dtos is null || events_dtos.Count == 0)
-            return new List<ActivityEvent>();
+            return null;
 
         // map DTO's to database entity
         var events = events_dtos.Select(MapToEntity).ToList();
@@ -48,12 +49,12 @@ public class ActivityWatchService
         return events;
     }
 
-    public async Task<List<ActivityEvent>> FetchNewBucketEvents()
+    public async Task<List<ActivityEvent>?> SyncNewBucketEvents()
     {
-        return await FetchNewBucketEvents(_settings.BucketID);
+        return await SyncNewBucketEvents(_options.BucketID);
     }
 
-    public async Task<List<ActivityEvent>> FetchNewBucketEvents(string bucketID)
+    public async Task<List<ActivityEvent>?> SyncNewBucketEvents(string bucketID)
     {
         // find the timestamp of the last(newest) event in DB
         var latestTimestamp = await _context.ActivityWatchEvents
@@ -76,7 +77,7 @@ public class ActivityWatchService
 
         // check if new events exist or not
         if (events_dtos is null || events_dtos.Count == 0)
-            return new List<ActivityEvent>();
+            return null;
 
         // map DTOs to DB entity
         var events = events_dtos.Select(MapToEntity).ToList();
