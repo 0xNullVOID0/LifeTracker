@@ -139,7 +139,7 @@ app.MapGet("/buienradar", async (BuienradarService buienradarService) =>
 
     try
     {
-        var station_data = await buienradarService.GetBuienradarDataAsync();
+        var station_data = await buienradarService.SyncStationMeasurement();
         return station_data is not null ? Results.Ok(station_data) : Results.NotFound();
     }
     catch (Exception ex)
