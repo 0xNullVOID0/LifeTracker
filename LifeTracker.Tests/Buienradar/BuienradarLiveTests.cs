@@ -34,8 +34,8 @@ public class BuienradarLiveTests
         // Check if we even received a station and its data back and if its the right one(heino/6278) 
         Assert.NotNull(station);
         Assert.False(string.IsNullOrWhiteSpace(station.StationName));
-        Assert.True(station.StationId == 6278 || station.StationName.Contains("Heino", StringComparison.OrdinalIgnoreCase),
-            $"Unexpected station: {station.StationId} {station.StationName}");
+        Assert.True(station.StationID == 6278 || station.StationName.Contains("Heino", StringComparison.OrdinalIgnoreCase),
+            $"Unexpected station: {station.StationID} {station.StationName}");
 
 
         // Check if measurements are within proper, reasonable range
@@ -72,7 +72,7 @@ public class BuienradarLiveTests
 
         // Check if data was properly saved in the in memory DB
         var saved = await db.BuienradarStationMeasurements.SingleAsync();
-        Assert.Equal(station.StationId, saved.StationId);
+        Assert.Equal(station.StationID, saved.StationID);
         Assert.Equal(station.Temperature, saved.Temperature);
         Assert.Equal(station.Humidity, saved.Humidity);
     }

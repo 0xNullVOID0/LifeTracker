@@ -2,6 +2,7 @@
 using LifeTracker.Dtos.Buienradar;
 using LifeTracker.Entities;
 using LifeTracker.Entities.ESP32;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace LifeTracker.Services;
@@ -27,7 +28,7 @@ public class BuienradarService
 
         // Get closest station
         var station = data?.Actual?.StationMeasurements?
-            .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationId == 6278); // TODO make configurable
+            .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationID == 6278); // TODO make configurable
 
         if (station != null) 
             await SaveMeasurement(station);
@@ -36,8 +37,20 @@ public class BuienradarService
 
     public async Task SaveMeasurement(BuienradarStationMeasurement measurement)
     {
-        _context.BuienradarStationMeasurements.Add(measurement);
-        await _context.SaveChangesAsync();
+        // Convert timestamp to UTC for saving to DB and checking for existing record
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Amsterdam");
+        DateTime rawDateTime = measurement.Timestamp.DateTime;
+        DateTime unspecified = DateTime.SpecifyKind(rawDateTime, DateTimeKind.Unspecified);
+        measurement.Timestamp = new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(unspecified, timeZone));
+
+        // Check if record with composite PK already exists or not before trying to save
+        var existing = await _context.BuienradarStationMeasurements.FindAsync(measurement.StationID, measurement.Timestamp);
+
+        if (existing is null)
+        {
+            _context.BuienradarStationMeasurements.Add(measurement);
+            await _context.SaveChangesAsync();
+        }
     }
 }
 

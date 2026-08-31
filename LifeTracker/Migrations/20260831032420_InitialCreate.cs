@@ -35,9 +35,8 @@ namespace LifeTracker.Migrations
                 name: "BuienradarStationMeasurements",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StationId = table.Column<int>(type: "integer", nullable: false),
+                    StationID = table.Column<int>(type: "integer", nullable: false),
+                    Timestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     StationName = table.Column<string>(type: "text", nullable: false),
                     WeatherDescription = table.Column<string>(type: "text", nullable: true),
                     Temperature = table.Column<float>(type: "real", nullable: false),
@@ -54,7 +53,7 @@ namespace LifeTracker.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BuienradarStationMeasurements", x => x.ID);
+                    table.PrimaryKey("PK_BuienradarStationMeasurements", x => new { x.StationID, x.Timestamp });
                 });
 
             migrationBuilder.CreateTable(

@@ -64,6 +64,9 @@ public class AppDbContext : DbContext
         // descending index for timestamp since its used for fetching only new events
         modelBuilder.Entity<ActivityEvent>().HasIndex(e => e.Timestamp).IsDescending();
 
+        // composite key with the measurements most important and relevant differentiators 
+        modelBuilder.Entity<BuienradarStationMeasurement>().HasKey(m => new { m.StationID, m.Timestamp });
+
         modelBuilder.Entity<DailyHeartRate>().HasKey(d => d.Date);
         modelBuilder.Entity<DailyStress>().HasKey(d => d.Date);
         modelBuilder.Entity<DailySleep>().HasKey(d => d.Date);
@@ -95,8 +98,8 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<BuienradarStationMeasurement>(entity =>
         {
-            entity.Property(e => e.ID).HasColumnOrder(1);
-            entity.Property(e => e.StationId).HasColumnOrder(2);
+            entity.Property(e => e.StationID).HasColumnOrder(1);
+            entity.Property(e => e.Timestamp).HasColumnOrder(2);
             entity.Property(e => e.StationName).HasColumnOrder(3);
             entity.Property(e => e.WeatherDescription).HasColumnOrder(4);
             entity.Property(e => e.Temperature).HasColumnOrder(5);

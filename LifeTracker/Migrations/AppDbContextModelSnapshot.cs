@@ -63,12 +63,15 @@ namespace LifeTracker.Migrations
 
             modelBuilder.Entity("LifeTracker.Entities.ESP32.BuienradarStationMeasurement", b =>
                 {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("StationID")
                         .HasColumnType("integer")
-                        .HasColumnOrder(1);
+                        .HasColumnOrder(1)
+                        .HasJsonPropertyName("stationid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(2)
+                        .HasJsonPropertyName("timestamp");
 
                     b.Property<float?>("AirPressure")
                         .HasColumnType("real")
@@ -98,11 +101,6 @@ namespace LifeTracker.Migrations
                         .HasColumnType("real")
                         .HasColumnOrder(10)
                         .HasJsonPropertyName("rainFallLastHour");
-
-                    b.Property<int>("StationId")
-                        .HasColumnType("integer")
-                        .HasColumnOrder(2)
-                        .HasJsonPropertyName("stationid");
 
                     b.Property<string>("StationName")
                         .IsRequired()
@@ -139,7 +137,7 @@ namespace LifeTracker.Migrations
                         .HasColumnOrder(12)
                         .HasJsonPropertyName("windspeedBft");
 
-                    b.HasKey("ID");
+                    b.HasKey("StationID", "Timestamp");
 
                     b.ToTable("BuienradarStationMeasurements");
                 });

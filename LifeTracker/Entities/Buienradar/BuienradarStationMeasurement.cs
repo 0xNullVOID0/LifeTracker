@@ -5,10 +5,11 @@ namespace LifeTracker.Entities.ESP32;
 
 public class BuienradarStationMeasurement : ClimateMeasurement
 {
-    public int ID { get; set; }
+    [JsonPropertyName("timestamp")]
+    public DateTimeOffset Timestamp { get; set; } // composite PK together with stationID
 
     [JsonPropertyName("stationid")]
-    public int StationId { get; set; }
+    public int StationID { get; set; }
 
     [JsonPropertyName("stationname")]
     public string StationName { get; set; } = null!; // null! to calm compiler, stationname is always present
@@ -37,4 +38,6 @@ public class BuienradarStationMeasurement : ClimateMeasurement
 
     [JsonPropertyName("airpressure")]
     public float? AirPressure { get; set; } // almost half of stations don't have it, so nullable
+
+
 }

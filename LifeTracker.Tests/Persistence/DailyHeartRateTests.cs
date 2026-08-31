@@ -77,7 +77,7 @@ public class DailyHeartRateTests
         await service.SaveDailyHeartRate(Day(date, 50, [56, 58]));
         await service.SaveDailyHeartRate(Day(date, 55, [56, 58, 62, 64]));
 
-        // Verify Upsert of related HeartRateSample rows has grown the list and without any DB duplicate conflicts since existing values are also still being passed, just with new extra values on top
+        // Verify Upsert of related HeartRateSample rows has grown the list, that old Range has been removed and replaced with the newer longer values list
         var saved = await db.DailyHeartRates.Include(d => d.Samples).SingleAsync();
         Assert.Equal(55, saved.RestingRate);
         Assert.Equal(4, saved.Samples.Count);
