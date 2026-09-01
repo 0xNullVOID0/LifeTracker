@@ -8,7 +8,7 @@ public static class RoomClimateEndpoints
     public static IEndpointRouteBuilder MapRoomClimateEndpoints(this IEndpointRouteBuilder routes)
     {
         // TODO fix handling route getting bad, wrong or not filled in json values
-        routes.MapPost("/api/room-climate", async (RoomClimateMeasurement body, ESP32Service service) =>
+        routes.MapPost("/room-climate", async (RoomClimateMeasurement body, ESP32Service service) =>
         {
             await service.SaveRoomClimate(body);
             return Results.Ok(new { success = true });                                                                                             // TODO use device key instead of JWT for esp32?

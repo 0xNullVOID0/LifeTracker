@@ -107,11 +107,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health").AllowAnonymous();
-app.MapBuienradarEndpoints();
-app.MapRoomClimateEndpoints();
-app.MapActivityWatchEndpoints();
-app.MapGarminEndpoints();
 
+
+var api = app.MapGroup("/api");
+api.MapBuienradarEndpoints();
+api.MapRoomClimateEndpoints();
+api.MapActivityWatchEndpoints();
+api.MapGarminEndpoints();
 
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
