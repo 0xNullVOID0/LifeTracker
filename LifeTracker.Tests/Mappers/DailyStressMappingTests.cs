@@ -1,5 +1,7 @@
 ﻿using LifeTracker.Dtos.Garmin;
 using LifeTracker.Services;
+using static LifeTracker.Mappers.GarminMapping;
+
 
 namespace LifeTracker.Tests.Mappers;
 
@@ -15,7 +17,7 @@ public class DailyStressMappingTests
             MaxStressLevel = 87
         };
 
-        var entity = GarminBridgeService.MapToEntity(dto);
+        var entity = MapToEntity(dto);
 
         Assert.Equal(dto.CalendarDate, entity.Date);
         Assert.Equal(17, entity.Average);

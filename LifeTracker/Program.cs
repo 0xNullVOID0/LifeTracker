@@ -100,7 +100,6 @@ else
 }
 
 
-app.UseHttpsRedirection();
 app.UseMiddleware<DateQueryMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 

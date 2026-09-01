@@ -1,5 +1,6 @@
 ﻿using LifeTracker.Dtos.Garmin;
 using LifeTracker.Services;
+using static LifeTracker.Mappers.GarminMapping;
 
 namespace LifeTracker.Tests.Mappers;
 
@@ -23,7 +24,7 @@ public class DailySleepMappingTests
             }
         };
 
-        var entity = GarminBridgeService.MapToEntity(dto);
+        var entity = MapToEntity(dto);
 
         Assert.Equal(new DateOnly(2026, 8, 18), entity.Date);
         Assert.Equal(22920, entity.SleepTimeSeconds);

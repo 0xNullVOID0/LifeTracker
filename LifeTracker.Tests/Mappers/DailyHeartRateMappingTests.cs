@@ -1,5 +1,6 @@
 ﻿using LifeTracker.Dtos.Garmin;
 using LifeTracker.Services;
+using static LifeTracker.Mappers.GarminMapping;
 
 namespace LifeTracker.Tests.Mappers;
 
@@ -26,7 +27,7 @@ public class DailyHeartRateMappingTests
             ]
         };
 
-        var entity = GarminBridgeService.MapToEntity(dto);
+        var entity = MapToEntity(dto);
 
         Assert.Equal(date, entity.Date);
         Assert.Equal(55, entity.RestingRate);
