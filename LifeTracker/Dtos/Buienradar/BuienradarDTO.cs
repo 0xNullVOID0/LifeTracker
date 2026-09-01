@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using LifeTracker.Entities.ESP32;
+using LifeTracker.Entities.Buienradar;
 
 namespace LifeTracker.Dtos.Buienradar;
 

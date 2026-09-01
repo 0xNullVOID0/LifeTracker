@@ -1,5 +1,6 @@
 ﻿using LifeTracker.Entities;
 using LifeTracker.Entities.ESP32;
+using LifeTracker.Entities.Buienradar;
 using LifeTracker.Entities.ActivityWatch;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
@@ -109,7 +110,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.SunPower).HasColumnOrder(9);
             entity.Property(e => e.RainFallLastHour).HasColumnOrder(10);
             entity.Property(e => e.RainFallLast24Hour).HasColumnOrder(11);
-            entity.Property(e => e.WindspeedBft).HasColumnOrder(12);
+            entity.Property(e => e.Windspeed).HasColumnOrder(12);
             entity.Property(e => e.AirPressure).HasColumnOrder(13);
             entity.Property(e => e.CreatedAt).HasColumnOrder(15);
             entity.Property(e => e.UpdatedAt).HasColumnOrder(16);

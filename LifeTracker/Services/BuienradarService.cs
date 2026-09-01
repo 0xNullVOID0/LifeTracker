@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using LifeTracker.Dtos.Buienradar;
-using LifeTracker.Entities;
-using LifeTracker.Entities.ESP32;
+using LifeTracker.Entities.Buienradar;
 using Microsoft.EntityFrameworkCore;
 
 

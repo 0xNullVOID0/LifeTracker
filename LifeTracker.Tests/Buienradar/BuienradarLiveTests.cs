@@ -1,6 +1,7 @@
 ﻿using LifeTracker;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
+using LifeTracker.Entities.Buienradar;
 
 namespace LifeTracker.Tests.Buienradar;
 
@@ -63,7 +64,7 @@ public class BuienradarLiveTests
         if (station.RainFallLast24Hour is { } day)
             Assert.True(day >= 0f, $"rain last 24h {day}");
 
-        if (station.WindspeedBft is { } bft)
+        if (station.Windspeed is { } bft)
             Assert.InRange(bft, 0f, 12f);
 
         if (station.SunPower is { } sun)

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260831032420_InitialCreate")]
+    [Migration("20260901043624_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -135,10 +135,10 @@ namespace LifeTracker.Migrations
                         .HasColumnOrder(7)
                         .HasJsonPropertyName("winddirection");
 
-                    b.Property<float?>("WindspeedBft")
+                    b.Property<float?>("Windspeed")
                         .HasColumnType("real")
                         .HasColumnOrder(12)
-                        .HasJsonPropertyName("windspeedBft");
+                        .HasJsonPropertyName("windspeed");
 
                     b.HasKey("StationID", "Timestamp");
 

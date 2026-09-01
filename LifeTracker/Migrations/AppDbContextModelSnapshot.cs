@@ -132,10 +132,10 @@ namespace LifeTracker.Migrations
                         .HasColumnOrder(7)
                         .HasJsonPropertyName("winddirection");
 
-                    b.Property<float?>("WindspeedBft")
+                    b.Property<float?>("Windspeed")
                         .HasColumnType("real")
                         .HasColumnOrder(12)
-                        .HasJsonPropertyName("windspeedBft");
+                        .HasJsonPropertyName("windspeed");
 
                     b.HasKey("StationID", "Timestamp");
 

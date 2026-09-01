@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LifeTracker.Entities.ESP32;
@@ -8,5 +9,6 @@ public class RoomClimateMeasurement : ClimateMeasurement
 
     public DateTimeOffset Timestamp { get; set; }
 
+    [DefaultValue(446)]
     public int CO2 { get; set; }
 }

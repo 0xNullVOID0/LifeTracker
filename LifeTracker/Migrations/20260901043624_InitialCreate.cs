@@ -46,7 +46,7 @@ namespace LifeTracker.Migrations
                     SunPower = table.Column<float>(type: "real", nullable: true),
                     RainFallLastHour = table.Column<float>(type: "real", nullable: true),
                     RainFallLast24Hour = table.Column<float>(type: "real", nullable: true),
-                    WindspeedBft = table.Column<float>(type: "real", nullable: true),
+                    Windspeed = table.Column<float>(type: "real", nullable: true),
                     AirPressure = table.Column<float>(type: "real", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
