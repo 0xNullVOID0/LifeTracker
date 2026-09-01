@@ -57,6 +57,21 @@ builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
     options.AddOperationTransformer<BearerOperationTransformer>();
+
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        // Set order of tag groups in Scalar/OpenAPI
+        document.Tags = new List<Microsoft.OpenApi.OpenApiTag>
+        {
+            new() { Name = "Buienradar" },
+            new() { Name = "Garmin" },
+            new() { Name = "ActivityWatch" },
+            new() { Name = "RoomClimate" },
+            new() { Name = "Auth" }
+        }.ToHashSet();
+
+        return Task.CompletedTask;
+});
 });
 
 builder.Services.AddProblemDetails();
@@ -111,9 +126,9 @@ app.MapHealthChecks("/health").AllowAnonymous();
 
 var api = app.MapGroup("/api");
 api.MapBuienradarEndpoints();
-api.MapRoomClimateEndpoints();
-api.MapActivityWatchEndpoints();
 api.MapGarminEndpoints();
+api.MapActivityWatchEndpoints();
+api.MapRoomClimateEndpoints();
 
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
@@ -140,7 +155,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
 
 
 
-app.MapPost("/api/auth/token", (TokenRequest request) =>
+api.MapPost("/auth/token", (TokenRequest request) =>
 {
     var password = JWT.Password;
     if (string.IsNullOrWhiteSpace(password) || request.Password != password)
@@ -148,7 +163,7 @@ app.MapPost("/api/auth/token", (TokenRequest request) =>
 
     var token = JwtTokenGenerator.Generate(JWT);
     return Results.Ok(new { token });
-}).AllowAnonymous().WithName("GenerateToken").WithSummary("Get JWT with demo/master password");
+}).AllowAnonymous().WithName("GenerateToken").WithSummary("Get JWT with demo/master password").WithTags("Auth");
 
 //return Results.Ok(new { token = JwtTokenGenerator.GenerateToken(config, "Demo") });
 
