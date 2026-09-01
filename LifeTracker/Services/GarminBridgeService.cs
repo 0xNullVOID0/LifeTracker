@@ -19,11 +19,68 @@ public partial class GarminBridgeService
         _logger = logger;
     }
 
+    #region Getters
+    public async Task<DailyHeartRate?> GetHeartRateByDay(DateOnly date) =>
+        await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
+
+    public async Task<DailyStress?> GetStressByDay(DateOnly date) =>
+        await _context.DailyStresses.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+
+    public async Task<DailySleep?> GetSleepByDay(DateOnly date) =>
+        await _context.DailySleeps.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+
     public async Task<object?> GarminBridgeHealthCheck() =>
         await _httpClient.GetFromJsonAsync<object?>("health");
 
-    // TODO cancellation tokens? since its such a long duration function
-    // TODO turn into background task or something
+
+    // Gets all Garmin data from DB by date
+    public async Task<GarminDay?> GetAllDataByDay(DateOnly date)
+    {
+        var heart = await GetHeartRateByDay(date);
+        var stress = await GetStressByDay(date);
+        var sleep = await GetSleepByDay(date);
+
+        if (heart is null && stress is null && sleep is null)
+            return null;
+
+        return new GarminDay(date, heart, stress, sleep);
+    }
+
+    public async Task<IReadOnlyList<GarminDay>> GetAllGarminDays()
+    {
+        var heartRates = await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).ToListAsync();
+        var stresses = await _context.DailyStresses.AsNoTracking().ToListAsync();
+        var sleeps = await _context.DailySleeps.AsNoTracking().ToListAsync();
+
+        // index records by date for fast lookup and combining
+        var heartByDate = heartRates.ToDictionary(x => x.Date);
+        var stressByDate = stresses.ToDictionary(x => x.Date);
+        var sleepByDate = sleeps.ToDictionary(x => x.Date);
+
+        // get all possible dates across the entities, newest to oldest
+        var dates = heartByDate.Keys.Union(stressByDate.Keys).Union(sleepByDate.Keys).OrderByDescending(d => d);
+
+        var days = new List<GarminDay>();
+        foreach (var date in dates)
+        {
+            heartByDate.TryGetValue(date, out var heart);
+            stressByDate.TryGetValue(date, out var stress);
+            sleepByDate.TryGetValue(date, out var sleep);
+
+            // skip entries where both heart and stress are null, sleep can be nullable so its not required
+            if (heart is null && stress is null)
+                continue;
+
+            days.Add(new GarminDay(date, heart, stress, sleep));
+        }
+
+        return days;
+    }
+    #endregion
+
+    #region Bridge & Sync
+
+    // TODO turn into background task or something and cancellation tokens? since its such a long duration function
     // Function for syncing larger stretches of Garming data such as for a first time setup
     public async Task<BackfillResult> SyncRecentDays(int days = 14)
     {
@@ -58,6 +115,7 @@ public partial class GarminBridgeService
     public sealed record BackfillResult(int Synced, int Empty, DateOnly? StoppedAt, string? Error);
 
     // TODO add polly
+    // Helper function for all sync functions 
     private async Task<T?> FetchFromBridgeAsync<T>(string endpoint, DateOnly date)
     {
         var url = $"{endpoint}?date={date:yyyy-MM-dd}";
@@ -73,30 +131,8 @@ public partial class GarminBridgeService
         return await response.Content.ReadFromJsonAsync<T>(); // deserialize the response's body to type T
     }
 
-    public async Task<DailyHeartRate?> GetHeartRateByDay(DateOnly date) =>
-        await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
-
-    public async Task<DailyStress?> GetStressByDay(DateOnly date) =>
-        await _context.DailyStresses.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
-
-    public async Task<DailySleep?> GetSleepByDay(DateOnly date) =>
-        await _context.DailySleeps.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
-
-    // Gets all Garmin data from DB by date
-    public async Task<GarminDay?> GetAllDataByDay(DateOnly date)
-    {
-        var heart = await GetHeartRateByDay(date);
-        var stress = await GetStressByDay(date);
-        var sleep = await GetSleepByDay(date);
-
-        if (heart is null && stress is null && sleep is null)
-            return null;
-
-        return new GarminDay(date, heart, stress, sleep);
-    }
-
     // Syncs all Garmin data from the official API via the python GarminConnect bridge and upserts into DB
-    public async Task<GarminDay> SyncAllDataByDay(DateOnly date)
+    public async Task<GarminDay?> SyncAllDataByDay(DateOnly date)
     {
         var heart = await SyncHeartRateByDay(date);
         var stress = await SyncStressLevelByDay(date);
@@ -130,7 +166,6 @@ public partial class GarminBridgeService
         return dailyStress;
     }
 
-    // TODO function, cron for getting all backlog data, a first time profile setup to get all available data history, possible rate limit stuff 
     public async Task<DailySleep?> SyncSleepByDay(DateOnly date)
     {
         var sleepDTO = await FetchFromBridgeAsync<SleepResponseDto>("sleep", date);
@@ -141,36 +176,6 @@ public partial class GarminBridgeService
         await SaveDailySleep(dailySleep, sleepDTO.SleepHeartRate);
         return dailySleep;
     }
-
-    public async Task<IReadOnlyList<GarminDay>> GetAllGarminDays()
-    {
-        var heartRates = await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).ToListAsync();
-        var stresses = await _context.DailyStresses.AsNoTracking().ToListAsync();
-        var sleeps = await _context.DailySleeps.AsNoTracking().ToListAsync();
-
-        // index records by date for fast lookup and combining
-        var heartByDate = heartRates.ToDictionary(x => x.Date);
-        var stressByDate = stresses.ToDictionary(x => x.Date);
-        var sleepByDate = sleeps.ToDictionary(x => x.Date);
-
-        // get all possible dates across the entities, newest to oldest
-        var dates = heartByDate.Keys.Union(stressByDate.Keys).Union(sleepByDate.Keys).OrderByDescending(d => d);
-
-        var days = new List<GarminDay>();
-        foreach (var date in dates)
-        {
-            heartByDate.TryGetValue(date, out var heart);
-            stressByDate.TryGetValue(date, out var stress);
-            sleepByDate.TryGetValue(date, out var sleep);
-
-            // skip entries where both heart and stress are null, sleep can be nullable so its not required
-            if (heart is null && stress is null)
-                continue;
-
-            days.Add(new GarminDay(date, heart, stress, sleep));
-        }
-
-        return days;
-    }
+    #endregion
 }
 
