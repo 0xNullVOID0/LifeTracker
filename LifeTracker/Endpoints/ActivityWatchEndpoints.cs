@@ -8,9 +8,14 @@ public static class ActivityWatchEndpoints
     {
         var group = routes.MapGroup("/activity-watch").WithTags("ActivityWatch");
 
-        // optional date parameter expects YYYY-MM-dd format(defaults to today)
-        group.MapGet("/new", async (DateOnly? date, ActivityWatchService service) =>
-            await service.FetchNewBucketEvents() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("FetchActivityWatchEvents");
+        // TODO handle fucked start and end date things again, add to middleware thing 
+        // Fetch events from own DB with optional start and or end range by timestamp
+        group.MapGet("/", async (DateTimeOffset? start, DateTimeOffset? end, ActivityWatchService service) =>
+        {
+            var data = start.HasValue ? await service.GetBucketEvents(start.Value, end) : await service.GetBucketEvents();
+            return data is not null ? Results.Ok(data) : Results.NotFound();
+        }).WithName("GetActivityWatchEvents");
+
         // Optional date parameter expects YYYY-MM-dd format(defaults to today)
         group.MapPost("/sync/all", async (DateOnly? date, ActivityWatchService service) =>
             await service.SyncBucketEvents() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("SyncAllActivityWatchEvents");

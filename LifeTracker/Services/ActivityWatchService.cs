@@ -10,15 +10,36 @@ public class ActivityWatchService
 {
     private readonly HttpClient _httpClient;
     private readonly AppDbContext _context;
-    private readonly ActivityWatchOptions _settings;
+    private readonly ActivityWatchOptions _options;
     private readonly ILogger<ActivityWatchService> _logger;
 
-    public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchOptions> settings, ILogger<ActivityWatchService> logger)
+    public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchOptions> options, ILogger<ActivityWatchService> logger)
     {
         _httpClient = httpclient;
         _context = context;
-        _settings = settings.Value;
+        _options = options.Value;
         _logger = logger;
+    }
+
+    public async Task<List<ActivityEvent>?> GetBucketEvents() =>
+        await _context.ActivityWatchEvents.AsNoTracking().ToListAsync();
+
+
+    // TODO date/timestamp differentiator, starting/ending point for querying 
+    public async Task<List<ActivityEvent>?> GetBucketEvents(DateTimeOffset timestamp) =>
+        await _context.ActivityWatchEvents.AsNoTracking().ToListAsync();
+
+    // Query from start to optional end timestamp
+    public async Task<List<ActivityEvent>?> GetBucketEvents(DateTimeOffset start, DateTimeOffset? end = null)
+    {
+        var query = _context.ActivityWatchEvents.AsNoTracking().Where(e => e.Timestamp >= start);
+
+        // only query range with end if end timestamp passed
+        if (end.HasValue)
+            query = query.Where(e => e.Timestamp <= end.Value);
+
+        var events = await query.OrderBy(e => e.Timestamp).ToListAsync();
+        return events.Count != 0 ? events : null;
     }
 
 
