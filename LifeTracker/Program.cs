@@ -107,7 +107,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
+
+    // ESP32 runs on 0.0.0.0 with separate port
+    // Prevents anything other than the ESP32 and it's route from doing anything on 0.0.0.0
+    app.Use(async (ctx, next) =>
+    {
+        if (ctx.Connection.LocalPort == 5072 && !ctx.Request.Path.StartsWithSegments("/api/room-climate"))
+        {
+            ctx.Response.StatusCode = 404;
+            return;
+        }
+        await next();
+    });
+}
 else
 {
     app.UseExceptionHandler();
@@ -148,7 +162,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
 
     app.Lifetime.ApplicationStarted.Register(() =>
     {
-        var url = "http://0.0.0.0:5071/scalar";
+        var url = "http://127.0.0.1:5071/scalar";
         Console.WriteLine($"\nView and test all endpoints in Scalar UI: {url}\n");
     });
 }
