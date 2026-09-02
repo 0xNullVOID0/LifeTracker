@@ -1,9 +1,10 @@
-﻿using LifeTracker.Entities;
+using LifeTracker.Entities;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace LifeTracker.Endpoints;
+
 
 public static class GarminEndpoints
 {
@@ -13,163 +14,85 @@ public static class GarminEndpoints
 
         // TODO cancellation tokens?
 
+        // Optional date parameter for majority of routes that expects YYYY-MM-dd format(defaults to today)
 
-        // TODO move stuff to endpoint filters? for global use
-        static bool IsFuture(DateOnly date) =>
-            date > DateOnly.FromDateTime(DateTime.Today);
-
-        static IResult? ValidateDate(DateOnly? date, out DateOnly targetDate)
-        {
-            targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
-            if (IsFuture(targetDate))
-                return Results.BadRequest(new { error = "Cannot request non existent data from future dates." });
-            return null; // means OK(no errors found)
-        }
-
-        static Results<Ok<T>, NoContent> OkOrNoContent<T>(T? data) =>
-            data is not null ? TypedResults.Ok(data) : TypedResults.NoContent();
-
-
-        // optional date parameter expects YYYY-MM-dd format(defaults to today)
+        // Sync Endpoints
         group.MapPost("/sync/heartrate", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
-
-            var data = await service.SyncHeartRateByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("SyncHeartRateByDay").WithSummary("Sync Garmin heart rate data")
-          .WithDescription("Fetches and syncs user's heart rate data for a specific day from the Python Garmin Connect Bridge API to DB")
-        .Produces<DailyHeartRate>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status204NoContent)
-        .ProducesProblem(StatusCodes.Status400BadRequest);
-
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncHeartRateByDay(target)))
+            .ConfigureRoute<DailyHeartRate>("SyncHeartRateByDay", "Sync Garmin heart rate data", "Fetches and syncs user's heart rate data for a specific day");
 
         group.MapPost("/sync/stress", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
-
-            var data = await service.SyncStressLevelByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("SyncStressLevelByDay").WithSummary("Sync Garmin stress data")
-          .WithDescription("Fetches and syncs user's stress level data for a specific day from the Python Garmin Connect Bridge API to DB")
-          .Produces<DailyStress>(StatusCodes.Status200OK)
-          .Produces(StatusCodes.Status204NoContent)
-          .ProducesProblem(StatusCodes.Status400BadRequest);
-
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncStressLevelByDay(target)))
+            .ConfigureRoute<DailyStress>("SyncStressLevelByDay", "Sync Garmin stress data", "Fetches and syncs user's stress level data for a specific day");
 
         group.MapPost("/sync/sleep", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
-
-            var data = await service.SyncSleepByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("SyncSleepByDay").WithSummary("Sync Garmin sleep data")
-          .WithDescription("Fetches and syncs user's sleep data for a specific day from the Python Garmin Connect Bridge API to DB")
-          .Produces<DailySleep>(StatusCodes.Status200OK)
-          .Produces(StatusCodes.Status204NoContent)
-          .ProducesProblem(StatusCodes.Status400BadRequest);
-
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncSleepByDay(target)))
+            .ConfigureRoute<DailySleep>("SyncSleepByDay", "Sync Garmin sleep data", "Fetches and syncs user's sleep data for a specific day");
 
         group.MapPost("/sync/day", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
-
-            var data = await service.SyncAllDataByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("SyncAllDataByDay").WithSummary("Sync all Garmin data for a specific day")
-          .WithDescription("Fetches and syncs all user's available Garmin data for a specific day from the Python Garmin Connect Bridge API")
-          .Produces<GarminDay>(StatusCodes.Status200OK)
-          .Produces(StatusCodes.Status204NoContent)
-          .ProducesProblem(StatusCodes.Status400BadRequest);
-
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncAllDataByDay(target)))
+            .ConfigureRoute<GarminDay>("SyncAllDataByDay", "Sync all Garmin data for a specific day", "Fetches and syncs all user's available Garmin data for a specific day");
 
         group.MapPost("/sync/backfill", async (int? days, GarminBridgeService service) =>
-        {
-            var data = await service.SyncRecentDays(days ?? 14);
-            return Results.Ok(data);
-        }).WithName("SyncRecentDays").WithSummary("Sync recent Garmin days into the database")
-          .WithDescription("Starts backfilling, syncing all Garmin data from the oldest given date to today.")
-          .Produces<BackfillResult>(StatusCodes.Status200OK);
+            Results.Ok(await service.SyncRecentDays(days ?? 14)))
+            .WithName("SyncRecentDays").WithSummary("Sync recent Garmin days into the database")
+            .WithDescription("Starts backfilling, syncing all Garmin data from the oldest given date to today.")
+            .Produces<BackfillResult>(StatusCodes.Status200OK).ProducesProblem(StatusCodes.Status400BadRequest);
 
-
-        // TODO add optional start and or end range to it
-        group.MapGet("/all", async (GarminBridgeService service) =>
+        // Get Endpoints
+        group.MapGet("/all", async (GarminBridgeService service) => // TODO add optional start and or end range to it
         {
             var data = await service.GetAllGarminDays();
             return data.Count > 0 ? Results.Ok(data) : Results.NoContent();
         })
-        .WithName("GetAllGarminDays")
-        .WithSummary("Get all stored Garmin days data from DB")
+        .WithName("GetAllGarminDays").WithSummary("Get all stored Garmin days data from DB")
         .WithDescription("Returns every day that has heart, stress and or sleep from DB")
-        .Produces<IReadOnlyList<GarminDay>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status204NoContent);
+        .Produces<IReadOnlyList<GarminDay>>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent);
 
         group.MapGet("/day", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
-
-            var data = await service.GetAllDataByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("GetAllDataByDay").WithSummary("Get all Garmin data for a specific day")
-          .WithDescription("Gets and returns all user's available Garmin data for a specific day from DB")
-          .Produces<GarminDay>(StatusCodes.Status200OK)
-          .Produces(StatusCodes.Status204NoContent)
-          .ProducesProblem(StatusCodes.Status400BadRequest);
-
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetAllDataByDay(target)))
+            .ConfigureRoute<GarminDay>("GetAllDataByDay", "Get all Garmin data for a specific day", "Gets and returns all user's available Garmin data for a specific day from DB");
 
         group.MapGet("/heartrate", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
-
-            var data = await service.GetHeartRateByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("GetHeartRateByDay").WithSummary("Get stored heart rate for a specific day")
-          .WithDescription("Gets and returns DailyHeartRate and it's HeartRateSamples from DB")
-          .Produces<DailyHeartRate>(StatusCodes.Status200OK)
-          .Produces(StatusCodes.Status204NoContent)
-          .ProducesProblem(StatusCodes.Status400BadRequest);
-
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetHeartRateByDay(target)))
+            .ConfigureRoute<DailyHeartRate>("GetHeartRateByDay", "Get stored heart rate for a specific day", "Gets and returns DailyHeartRate and its HeartRateSamples from DB");
 
         group.MapGet("/stress", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
-
-            var data = await service.GetStressByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("GetStressByDay").WithSummary("Get stored stress for a specific day")
-          .WithDescription("Gets and returns DailyStress from DB")
-          .Produces<DailyStress>(StatusCodes.Status200OK)
-          .Produces(StatusCodes.Status204NoContent)
-          .ProducesProblem(StatusCodes.Status400BadRequest);
-
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetStressByDay(target)))
+            .ConfigureRoute<DailyStress>("GetStressByDay", "Get stored stress for a specific day", "Gets and returns DailyStress from DB");
 
         group.MapGet("/sleep", async (DateOnly? date, GarminBridgeService service) =>
-        {
-            if (ValidateDate(date, out var targetDate) is { } error)
-                return error;
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetSleepByDay(target)))
+            .ConfigureRoute<DailySleep>("GetSleepByDay", "Get stored sleep for a specific day", "Gets and returns DailySleep from DB");
 
-            var data = await service.GetSleepByDay(targetDate);
-            return OkOrNoContent(data);
-        }).WithName("GetSleepByDay").WithSummary("Get stored sleep for a specific day")
-          .WithDescription("Gets and returns DailySleep from DB")
-          .Produces<DailySleep>(StatusCodes.Status200OK)
-          .Produces(StatusCodes.Status204NoContent)
-          .ProducesProblem(StatusCodes.Status400BadRequest);
-
-
-        // TODO is this even used, no right? python has its own /health route
         group.MapGet("/health", async (GarminBridgeService service) =>
-            await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("GarminBridgeHealthCheck").WithDescription("Checks if the Python GarminConnect bridge server is running");
+            await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound())
+            .WithName("GarminBridgeHealthCheck")
+            .WithDescription("Checks if the Python GarminConnect bridge server is running");
 
         return routes;
     }
+
+    // Helpers & Extension Methods 
+
+    // TODO move stuff to endpoint filters? for global use
+    public static bool IsFuture(DateOnly date) => date > DateOnly.FromDateTime(DateTime.Today);
+
+    public static IResult? ValidateDate(DateOnly? date, out DateOnly targetDate)
+    {
+        targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+        if (IsFuture(targetDate))
+            return Results.BadRequest(new { error = "Cannot request non existent data from future dates." });
+        return null; // means OK(no errors found)
+    }
+
+    public static IResult OkOrNoContent<T>(T? data) =>
+        data is not null ? Results.Ok(data) : Results.NoContent();
+
+    public static RouteHandlerBuilder ConfigureRoute<T>(this RouteHandlerBuilder builder, string name, string summary, string description) =>
+        builder.WithName(name).WithSummary(summary).WithDescription(description)
+               .Produces<T>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent)
+               .ProducesProblem(StatusCodes.Status400BadRequest);
 }
 
 public sealed record BackfillResult(int Synced, int Empty, DateOnly? StoppedAt, string? Error);
