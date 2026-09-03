@@ -1,4 +1,3 @@
-﻿using System.Text.Json.Serialization;
 using LifeTracker.Dtos.Buienradar;
 using LifeTracker.Entities.Buienradar;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +15,9 @@ public class BuienradarService
         _httpClient = httpclient;
         _context = context;
     }
+
+    public async Task<List<BuienradarStationMeasurement>> GetAll() =>
+        await _context.BuienradarStationMeasurements.AsNoTracking().ToListAsync();
 
     // TODO use buienradars own timestamp to decide if adding new entry or not 
     // timestamp	"2026-08-30T10:30:00"
