@@ -101,17 +101,17 @@ Reads never call Garmin. Writes do.
 
 | Method | Path | Source / Description |
 | --- | --- | --- |
-| `GET` | `/garmin/heartrate?date=yyyy-MM-dd` | Read from DB |
-| `GET` | `/garmin/stress` | Read from DB |
-| `GET` | `/garmin/sleep` | Read from DB |
-| `GET` | `/garmin/day` | Composite query (HR + Stress required, Sleep optional) |
-| `GET` | `/garmin/all` | All stored daily records |
-| `POST` | `/garmin/sync/heartrate` | Syncs sidecar data to DB (Upsert) |
-| `POST` | `/garmin/sync/stress` | Syncs sidecar data to DB (Upsert) |
-| `POST` | `/garmin/sync/sleep` | Syncs sidecar data to DB (Upsert) |
-| `POST` | `/garmin/sync/day` | Full day sync from sidecar to DB (Upsert) |
-| `POST` | `/garmin/sync/backfill?days=14` | Backfills Garmin data oldest → today, with short delay for basic rate-limit prevention |
-| `GET` | `/garmin/health` | Sidecar health status |
+| `GET` | `/api/garmin/heartrate?date=yyyy-MM-dd` | Read from DB |
+| `GET` | `/api/garmin/stress` | Read from DB |
+| `GET` | `/api/garmin/sleep` | Read from DB |
+| `GET` | `/api/garmin/day` | Composite query (HR + Stress required, Sleep optional) |
+| `GET` | `/api/garmin/all` | All stored daily records |
+| `POST` | `/api/garmin/sync/heartrate` | Syncs sidecar data to DB (Upsert) |
+| `POST` | `/api/garmin/sync/stress` | Syncs sidecar data to DB (Upsert) |
+| `POST` | `/api/garmin/sync/sleep` | Syncs sidecar data to DB (Upsert) |
+| `POST` | `/api/garmin/sync/day` | Full day sync from sidecar to DB (Upsert) |
+| `POST` | `/api/garmin/sync/backfill?days=14` | Backfills Garmin data oldest → today, with short delay for basic rate-limit prevention |
+| `GET` | `/api/garmin/health` | Sidecar health status |
 
 *Notes:*
 
@@ -122,9 +122,10 @@ Reads never call Garmin. Writes do.
 
 ## Other routes
 
-- `GET /buienradar` — pull Heino station from Buienradar, persist(will eventually be configurable but hardcoded for now since personal application)  
+- `GET /api/buienradar` —  Get all Buienradar station measurements from DB 
+- `POST /api/buienradar` — Pull Heino station from Buienradar, persist(will eventually be configurable but hardcoded for now since personal application)  
 - `POST /api/room-climate` — ESP32 ingest  
-- ActivityWatch under `/activity-watch` (needs a local AW server)
+- ActivityWatch under `/api/activity-watch` (needs a local AW server)
 
 ## Layout
 
