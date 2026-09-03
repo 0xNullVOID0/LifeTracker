@@ -9,7 +9,6 @@ public static class ActivityWatchEndpoints
     {
         var group = routes.MapGroup("/activity-watch").WithTags("ActivityWatch").AddEndpointFilter(DisableInDemo);
 
-        // TODO handle fucked start and end date things again, add to middleware thing
         // Fetch events from own DB with optional start and or end range by timestamp
         group.MapGet("/", async (DateTimeOffset? start, DateTimeOffset? end, ActivityWatchService service) =>
         {
