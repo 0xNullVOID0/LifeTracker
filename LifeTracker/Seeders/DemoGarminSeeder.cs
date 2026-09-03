@@ -1,4 +1,4 @@
-﻿using LifeTracker.Entities.Garmin;
+using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
 
 namespace LifeTracker.Services;
@@ -22,8 +22,8 @@ public static class DemoGarminSeeder
 
         foreach (var date in days)
         {
-            var offset = (today.DayNumber - date.DayNumber);
-            var resting = 52 + offset;
+            var offset = today.DayNumber - date.DayNumber;
+            var resting = 52 + (6 - offset); 
             var samples = MakeSamples(date, resting);
 
             db.DailyHeartRates.Add(new DailyHeartRate
@@ -38,8 +38,8 @@ public static class DemoGarminSeeder
             db.DailyStresses.Add(new DailyStress
             {
                 Date = date,
-                Average = 14 + offset,
-                Max = 60 + offset * 4
+                Average = 14 + (6 - offset),
+                Max = 60 + (6 - offset) * 2
             });
 
             // don't add/create sleep data for today since day is not over yet so (probably/usually) no sleep data
@@ -48,13 +48,13 @@ public static class DemoGarminSeeder
                 db.DailySleeps.Add(new DailySleep
                 {
                     Date = date,
-                    SleepTimeSeconds = 25_200 + offset * 600,
+                    SleepTimeSeconds = 25_200 + (6 - offset) * 300,
                     DeepSleepSeconds = 5_400,
                     LightSleepSeconds = 14_400,
                     RemSleepSeconds = 3_600,
                     AwakeSleepSeconds = 1_800,
                     AvgHeartRate = resting,
-                    AvgSleepStress = 8 + offset
+                    AvgSleepStress = 8 + (6 - offset)
                 });
             }
         }
