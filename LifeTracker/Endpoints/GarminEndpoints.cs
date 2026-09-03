@@ -16,29 +16,6 @@ public static class GarminEndpoints
 
         // Optional date parameter for majority of routes that expects YYYY-MM-dd format(defaults to today)
 
-        // Sync Endpoints
-        group.MapPost("/sync/heartrate", async (DateOnly? date, GarminBridgeService service) =>
-            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncHeartRateByDay(target)))
-            .ConfigureRoute<DailyHeartRate>("SyncHeartRateByDay", "Sync Garmin heart rate data", "Fetches and syncs user's heart rate data for a specific day");
-
-        group.MapPost("/sync/stress", async (DateOnly? date, GarminBridgeService service) =>
-            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncStressLevelByDay(target)))
-            .ConfigureRoute<DailyStress>("SyncStressLevelByDay", "Sync Garmin stress data", "Fetches and syncs user's stress level data for a specific day");
-
-        group.MapPost("/sync/sleep", async (DateOnly? date, GarminBridgeService service) =>
-            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncSleepByDay(target)))
-            .ConfigureRoute<DailySleep>("SyncSleepByDay", "Sync Garmin sleep data", "Fetches and syncs user's sleep data for a specific day");
-
-        group.MapPost("/sync/day", async (DateOnly? date, GarminBridgeService service) =>
-            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncAllDataByDay(target)))
-            .ConfigureRoute<GarminDay>("SyncAllDataByDay", "Sync all Garmin data for a specific day", "Fetches and syncs all user's available Garmin data for a specific day");
-
-        group.MapPost("/sync/backfill", async (int? days, GarminBridgeService service) =>
-            Results.Ok(await service.SyncRecentDays(days ?? 14)))
-            .WithName("SyncRecentDays").WithSummary("Sync recent Garmin days into the database")
-            .WithDescription("Starts backfilling, syncing all Garmin data from the oldest given date to today.")
-            .Produces<BackfillResult>(StatusCodes.Status200OK).ProducesProblem(StatusCodes.Status400BadRequest);
-
         // Get Endpoints
         group.MapGet("/all", async (GarminBridgeService service) => // TODO add optional start and or end range to it
         {
@@ -69,6 +46,30 @@ public static class GarminEndpoints
             await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound())
             .WithName("GarminBridgeHealthCheck")
             .WithDescription("Checks if the Python GarminConnect bridge server is running");
+
+
+        // Sync Endpoints
+        group.MapPost("/sync/heartrate", async (DateOnly? date, GarminBridgeService service) =>
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncHeartRateByDay(target)))
+            .ConfigureRoute<DailyHeartRate>("SyncHeartRateByDay", "Sync Garmin heart rate data", "Fetches and syncs user's heart rate data for a specific day");
+
+        group.MapPost("/sync/stress", async (DateOnly? date, GarminBridgeService service) =>
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncStressLevelByDay(target)))
+            .ConfigureRoute<DailyStress>("SyncStressLevelByDay", "Sync Garmin stress data", "Fetches and syncs user's stress level data for a specific day");
+
+        group.MapPost("/sync/sleep", async (DateOnly? date, GarminBridgeService service) =>
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncSleepByDay(target)))
+            .ConfigureRoute<DailySleep>("SyncSleepByDay", "Sync Garmin sleep data", "Fetches and syncs user's sleep data for a specific day");
+
+        group.MapPost("/sync/day", async (DateOnly? date, GarminBridgeService service) =>
+            ValidateDate(date, out var target) ?? OkOrNoContent(await service.SyncAllDataByDay(target)))
+            .ConfigureRoute<GarminDay>("SyncAllDataByDay", "Sync all Garmin data for a specific day", "Fetches and syncs all user's available Garmin data for a specific day");
+
+        group.MapPost("/sync/backfill", async (int? days, GarminBridgeService service) =>
+            Results.Ok(await service.SyncRecentDays(days ?? 14)))
+            .WithName("SyncRecentDays").WithSummary("Sync recent Garmin days into the database")
+            .WithDescription("Starts backfilling, syncing all Garmin data from the oldest given date to today.")
+            .Produces<BackfillResult>(StatusCodes.Status200OK).ProducesProblem(StatusCodes.Status400BadRequest);
 
         return routes;
     }

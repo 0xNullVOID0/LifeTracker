@@ -1,4 +1,5 @@
-﻿using LifeTracker.Services;
+using LifeTracker.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LifeTracker.Endpoints;
 
@@ -6,9 +7,9 @@ public static class ActivityWatchEndpoints
 {
     public static IEndpointRouteBuilder MapActivityWatchEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/activity-watch").WithTags("ActivityWatch");
+        var group = routes.MapGroup("/activity-watch").WithTags("ActivityWatch").AddEndpointFilter(DisableInDemo);
 
-        // TODO handle fucked start and end date things again, add to middleware thing 
+        // TODO handle fucked start and end date things again, add to middleware thing
         // Fetch events from own DB with optional start and or end range by timestamp
         group.MapGet("/", async (DateTimeOffset? start, DateTimeOffset? end, ActivityWatchService service) =>
         {
@@ -24,5 +25,14 @@ public static class ActivityWatchEndpoints
             await service.SyncNewBucketEvents() is { } data ? Results.Ok(data) : Results.NotFound()).WithName("SyncNewActivityWatchEvents");
 
         return routes;
+    }
+
+    static async ValueTask<object?> DisableInDemo(EndpointFilterInvocationContext ctx, EndpointFilterDelegate next)
+    {
+        var env = ctx.HttpContext.RequestServices.GetRequiredService<IHostEnvironment>();
+        if (env.IsEnvironment("Demo"))
+            return Results.Json(new { error = "ActivityWatch is disabled in Demo" }, statusCode: StatusCodes.Status503ServiceUnavailable);
+
+        return await next(ctx);
     }
 }
