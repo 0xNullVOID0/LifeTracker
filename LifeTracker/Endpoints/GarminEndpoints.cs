@@ -2,6 +2,7 @@ using LifeTracker.Entities;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
+using static LifeTracker.Endpoints.EndpointHelpers;
 
 namespace LifeTracker.Endpoints;
 
@@ -74,26 +75,6 @@ public static class GarminEndpoints
         return routes;
     }
 
-    // Helpers & Extension Methods 
-
-    // TODO move stuff to endpoint filters? for global use
-    public static bool IsFuture(DateOnly date) => date > DateOnly.FromDateTime(DateTime.Today);
-
-    public static IResult? ValidateDate(DateOnly? date, out DateOnly targetDate)
-    {
-        targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
-        if (IsFuture(targetDate))
-            return Results.BadRequest(new { error = "Cannot request non existent data from future dates." });
-        return null; // means OK(no errors found)
-    }
-
-    public static IResult OkOrNoContent<T>(T? data) =>
-        data is not null ? Results.Ok(data) : Results.NoContent();
-
-    public static RouteHandlerBuilder ConfigureRoute<T>(this RouteHandlerBuilder builder, string name, string summary, string description) =>
-        builder.WithName(name).WithSummary(summary).WithDescription(description)
-               .Produces<T>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent)
-               .ProducesProblem(StatusCodes.Status400BadRequest);
 }
 
 public sealed record BackfillResult(int Synced, int Empty, DateOnly? StoppedAt, string? Error);

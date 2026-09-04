@@ -21,7 +21,7 @@ public class AppDbContext : DbContext
     public DbSet<DailySleep> DailySleeps { get; set; }
 
     // TODO proper db health checks, checking if schemas are properly setup even if db is running can still fail if schema is not setup properly
-    // TODO account stuff, rn its just single user hardcoded, stuff like that should be in a separate table and linked to the data, so multiple users can use the same db, "updatedby/createdby", account id linked to every or the proper db entries and such
+    // TODO account stuff?, rn its just single user hardcoded, stuff like that should be in a separate table and linked to the data, so multiple users can use the same db, "updatedby/createdby", account id linked to every or the proper db entries and such
 
     public override int SaveChanges()
     {

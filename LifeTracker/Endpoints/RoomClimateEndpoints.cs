@@ -1,6 +1,7 @@
 using LifeTracker.Entities.ESP32;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
+using static LifeTracker.Endpoints.EndpointHelpers;
 
 namespace LifeTracker.Endpoints;
 

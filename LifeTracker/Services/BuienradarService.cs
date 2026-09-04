@@ -19,8 +19,6 @@ public class BuienradarService
     public async Task<List<BuienradarStationMeasurement>> GetAll() =>
         await _context.BuienradarStationMeasurements.AsNoTracking().ToListAsync();
 
-    // TODO use buienradars own timestamp to decide if adding new entry or not 
-    // timestamp	"2026-08-30T10:30:00"
     // TODO add station id/name as parameter
     public async Task<BuienradarStationMeasurement?> SyncStationMeasurement()
     {

@@ -1,5 +1,6 @@
 using LifeTracker.Services;
 using Microsoft.Extensions.DependencyInjection;
+using static LifeTracker.Endpoints.EndpointHelpers;
 
 namespace LifeTracker.Endpoints;
 
@@ -12,8 +13,8 @@ public static class ActivityWatchEndpoints
         // Fetch events from own DB with optional start and or end range by timestamp
         group.MapGet("/", async (DateTimeOffset? start, DateTimeOffset? end, ActivityWatchService service) =>
         {
-            var data = start.HasValue ? await service.GetBucketEvents(start.Value, end) : await service.GetBucketEvents();
-            return data is not null ? Results.Ok(data) : Results.NotFound();
+            var data = start.HasValue ? await service.GetEvents(start.Value, end) : await service.GetEvents();
+            return OkOrNoContent(data);
         }).WithName("GetActivityWatchEvents");
 
         // Optional date parameter expects YYYY-MM-dd format(defaults to today)

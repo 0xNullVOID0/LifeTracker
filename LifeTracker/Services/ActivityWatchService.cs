@@ -21,16 +21,12 @@ public class ActivityWatchService
         _logger = logger;
     }
 
-    public async Task<List<ActivityEvent>?> GetBucketEvents() =>
+    public async Task<List<ActivityEvent>?> GetEvents() =>
         await _context.ActivityWatchEvents.AsNoTracking().ToListAsync();
 
-
-    // TODO date/timestamp differentiator, starting/ending point for querying 
-    public async Task<List<ActivityEvent>?> GetBucketEvents(DateTimeOffset timestamp) =>
-        await _context.ActivityWatchEvents.AsNoTracking().ToListAsync();
 
     // Query from start to optional end timestamp
-    public async Task<List<ActivityEvent>?> GetBucketEvents(DateTimeOffset start, DateTimeOffset? end = null)
+    public async Task<List<ActivityEvent>?> GetEvents(DateTimeOffset start, DateTimeOffset? end = null)
     {
         var query = _context.ActivityWatchEvents.AsNoTracking().Where(e => e.Timestamp >= start);
 
