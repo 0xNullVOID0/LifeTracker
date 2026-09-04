@@ -22,7 +22,7 @@ public static class BuienradarEndpoints
         {
             var data = await service.SyncStationMeasurement();
             return OkOrNoContent(data);
-        }).WithName("SyncBuienradar").WithTags("Buienradar").WithSummary("Sync latest Buienradar station measurement")
+        }).WithName("SyncBuienradar").WithTags("Buienradar").WithSummary("Sync latest Buienradar station measurement").WithDescription("Fetches the configured weather station(currently Heino) from their feed and stores it to DB")
         .Produces<BuienradarStationMeasurement>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status204NoContent);
 

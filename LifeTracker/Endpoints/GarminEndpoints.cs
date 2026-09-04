@@ -24,24 +24,24 @@ public static class GarminEndpoints
             return data.Count > 0 ? Results.Ok(data) : Results.NoContent();
         })
         .WithName("GetAllGarminDays").WithSummary("Get all stored Garmin days data from DB")
-        .WithDescription("Returns every day that has heart, stress and or sleep from DB")
+        .WithDescription("Returns list of composite GarminDay objects for every day that has heart, stress and or sleep from DB")
         .Produces<IReadOnlyList<GarminDay>>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent);
 
         group.MapGet("/day", async (DateOnly? date, GarminBridgeService service) =>
             ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetAllDataByDay(target)))
-            .ConfigureRoute<GarminDay>("GetAllDataByDay", "Get all Garmin data for a specific day", "Gets and returns all user's available Garmin data for a specific day from DB");
+            .ConfigureRoute<GarminDay>("GetAllDataByDay", "Get all Garmin data for a specific day", "Returns all user's available Garmin data for a specific day from DB");
 
         group.MapGet("/heartrate", async (DateOnly? date, GarminBridgeService service) =>
             ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetHeartRateByDay(target)))
-            .ConfigureRoute<DailyHeartRate>("GetHeartRateByDay", "Get stored heart rate for a specific day", "Gets and returns DailyHeartRate and its HeartRateSamples from DB");
+            .ConfigureRoute<DailyHeartRate>("GetHeartRateByDay", "Get stored heart rate for a specific day", "Returns DailyHeartRate and its HeartRateSamples from DB");
 
         group.MapGet("/stress", async (DateOnly? date, GarminBridgeService service) =>
             ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetStressByDay(target)))
-            .ConfigureRoute<DailyStress>("GetStressByDay", "Get stored stress for a specific day", "Gets and returns DailyStress from DB");
+            .ConfigureRoute<DailyStress>("GetStressByDay", "Get stored stress for a specific day", "Returns DailyStress from DB");
 
         group.MapGet("/sleep", async (DateOnly? date, GarminBridgeService service) =>
             ValidateDate(date, out var target) ?? OkOrNoContent(await service.GetSleepByDay(target)))
-            .ConfigureRoute<DailySleep>("GetSleepByDay", "Get stored sleep for a specific day", "Gets and returns DailySleep from DB");
+            .ConfigureRoute<DailySleep>("GetSleepByDay", "Get stored sleep for a specific day", "Returns DailySleep from DB");
 
         group.MapGet("/health", async (GarminBridgeService service) =>
             await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.NotFound())
