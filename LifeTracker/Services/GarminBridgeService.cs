@@ -1,4 +1,3 @@
-using System.Text.Json;
 using LifeTracker.Dtos.Garmin;
 using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
@@ -96,7 +95,7 @@ public partial class GarminBridgeService
 
             try
             {
-                GarminDay day = await SyncAllDataByDay(date);
+                GarminDay? day = await SyncAllDataByDay(date);
                 if (day is null) empty++;
                 else synced++;
             }
@@ -115,7 +114,7 @@ public partial class GarminBridgeService
     public sealed record BackfillResult(int Synced, int Empty, DateOnly? StoppedAt, string? Error);
 
     // TODO add polly
-    // Helper function for all sync functions 
+    // Helper function for all sync functions
     private async Task<T?> FetchFromBridgeAsync<T>(string endpoint, DateOnly date)
     {
         var url = $"{endpoint}?date={date:yyyy-MM-dd}";
@@ -178,4 +177,3 @@ public partial class GarminBridgeService
     }
     #endregion
 }
-

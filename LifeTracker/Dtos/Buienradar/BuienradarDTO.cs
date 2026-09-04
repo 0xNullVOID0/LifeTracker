@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using LifeTracker.Entities.Buienradar;
 
 namespace LifeTracker.Dtos.Buienradar;
@@ -6,7 +6,7 @@ namespace LifeTracker.Dtos.Buienradar;
 public class BuienradarResponse
 {
     [JsonPropertyName("actual")]
-    public ActualData Actual { get; set; }
+    public ActualData Actual { get; set; } = new();
 }
 
 public class ActualData
@@ -23,5 +23,3 @@ public class ActualData
     [JsonPropertyName("stationmeasurements")]
     public List<BuienradarStationMeasurement> StationMeasurements { get; set; } = [];
 }
-
-

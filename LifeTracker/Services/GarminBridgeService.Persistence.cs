@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using LifeTracker.Entities.Garmin;
 using LifeTracker.Dtos.Garmin;
 
@@ -48,10 +48,10 @@ public partial class GarminBridgeService
         }
     }
 
-    // TODO proper handling of same timestamp data, either all local or all gmt, 
+    // TODO proper handling of same timestamp data, either all local or all gmt,
 
     // Upserts DailySleep with it's related HeartRateSamples
-    public async Task SaveDailySleep(DailySleep dailySleep, List<GarminTimeSampleDto> heartRates)
+    public async Task SaveDailySleep(DailySleep dailySleep, List<GarminTimeSampleDto>? heartRates)
     {
         if (dailySleep is null)
             return;
@@ -62,7 +62,7 @@ public partial class GarminBridgeService
         {
             var existing = await _context.DailySleeps.FirstOrDefaultAsync(x => x.Date == date);
 
-            // TODO handle multiple sleep per day, checkout naps too 
+            // TODO handle multiple sleep per day, checkout naps too
             // update existing values
             if (existing is not null)
             {

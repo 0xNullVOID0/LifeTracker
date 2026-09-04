@@ -1,11 +1,5 @@
-﻿using System.Globalization;
-using System.Net;
-using LifeTracker.Dtos.Garmin;
 using LifeTracker.Entities.ESP32;
-using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace LifeTracker.Services;
 
@@ -22,7 +16,7 @@ public class ESP32Service
         _logger = logger;
     }
 
-    public async Task<RoomClimateMeasurement> SaveRoomClimate(RoomClimateMeasurement roomClimate)
+    public async Task<RoomClimateMeasurement?> SaveRoomClimate(RoomClimateMeasurement? roomClimate)
     {
         if (roomClimate is null)
             return null;
