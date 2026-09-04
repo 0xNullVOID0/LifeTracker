@@ -181,5 +181,7 @@ Currently the state of the application has mostly been integrating all these dif
 Garmin itself doesn't store or calculate that data, it's not in their API but obviously it can all be inferred just using the sleep start and end times.
 
 Next: Aligning timezones across the board, simple awake duration calculation from sleep start/end times, tighter ESP32 auth (device key + its own API key), basic frontend with some Grafana charts
+
 Unit tests and CI should and need to be more extensive, only added the first ones recently but having the automated Github actions CI is very nice and useful already
+
 Setting up Azure environment so ESP32 can ingest room climate date 24/7, for more proper automated background services for the other components and for setting up and testing out production environment  
