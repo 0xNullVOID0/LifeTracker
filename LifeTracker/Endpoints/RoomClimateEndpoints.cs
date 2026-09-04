@@ -1,7 +1,8 @@
 using LifeTracker.Entities.ESP32;
-using LifeTracker.Entities.Garmin;
+using LifeTracker.Filters;
 using LifeTracker.Services;
 using static LifeTracker.Endpoints.EndpointHelpers;
+
 
 namespace LifeTracker.Endpoints;
 
@@ -18,10 +19,10 @@ public static class RoomClimateEndpoints
             await service.SaveRoomClimate(body);
             return Results.Ok(new { success = true });                                                                                            
         }).WithName("PostRoomClimate").WithTags("RoomClimate").WithSummary("Ingest room climate measurements from ESP32 sensors")
-        // TODO use device key instead of JWT for esp32?
-        .AllowAnonymous() // easier for now to not have ESP32 deal with JWT header tokens 
+        .AllowAnonymous()
         .Produces<RoomClimateMeasurement>(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status400BadRequest);
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .AddEndpointFilter(DeviceKeyFilter.Require); // ESP32 uses device key instead of JWT for auth
 
 
         return routes;

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -81,8 +82,10 @@ builder.Services.AddHttpClient<BuienradarService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:Buienradar"));
 builder.Services.AddHostedService<BuienradarBackgroundService>();
 
+builder.Services.Configure<ESP32Options>(builder.Configuration.GetSection(ESP32Options.Section));
 builder.Services.AddHttpClient<ESP32Service>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ESP32RoomClimate"));
+
 
 builder.Services.Configure<ActivityWatchOptions>(
     builder.Configuration.GetSection(ActivityWatchOptions.SectionName));

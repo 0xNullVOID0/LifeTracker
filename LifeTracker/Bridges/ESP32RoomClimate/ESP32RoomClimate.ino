@@ -19,7 +19,10 @@ static int16_t error;
 
 const char* ssid     = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
+
 const char* apiEndpoint = API_ENDPOINT;
+const char* deviceID = DEVICE_ID;
+const char* apiKey = API_KEY;
 
 // Server and settings for getting current datetime
 const char* ntpServer = "pool.ntp.org";
@@ -154,6 +157,8 @@ void sendClimateData(int co2, double temp, double humidity) {
     // Prevent pbuf leaks by letting http client manage it's connection internally
     http.begin(apiEndpoint);
     http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-Device-ID", deviceID);
+    http.addHeader("X-API-Key", apiKey);
 
     JsonDocument json;
     json["Timestamp"] = timeBuffer;
