@@ -171,6 +171,7 @@ Others can use it if they'd like but you'd need to have a garmin smartwatch, ESP
 The Garmin smartwatch especially is (currently) the core of the whole thing since i find the possible interactions and correlations with the biometrics personally most interesting and relevant but more things will get added over time.
 
 Everything is still HTTP since it's still mostly local development and i haven't setup Azure deployment yet.
+Timezones aren't properly aligned in every spot yet, need to do a proper overhaul and check for every component there.
 
 Currently no frontend exists yet but it's planned, Vue or React with Grafana dashboards and such.
 I've just been using the OpenAPI Scalar UI page to check and test all my routes, and looking in my DB to see whats going on but it's also planned. 
@@ -179,8 +180,6 @@ Currently the state of the application has mostly been integrating all these dif
 
 Garmin itself doesn't store or calculate that data, it's not in their API but obviously it can all be inferred just using the sleep start and end times.
 
-
-Next: awake-window from consecutive sleep ends, tighter ESP32 auth (device key + its own API key), frontend
-
+Next: Aligning timezones across the board, simple awake duration calculation from sleep start/end times, tighter ESP32 auth (device key + its own API key), basic frontend with some Grafana charts
 Unit tests and CI should and need to be more extensive, only added the first ones recently but having the automated Github actions CI is very nice and useful already
-
+Setting up Azure environment so ESP32 can ingest room climate date 24/7, for more proper automated background services for the other components and for setting up and testing out production environment  
