@@ -2,19 +2,17 @@ using System.Text;
 using LifeTracker;
 using LifeTracker.Configuration;
 using LifeTracker.Endpoints;
-using LifeTracker.Entities.ESP32;
 using LifeTracker.Infrastructure;
 using LifeTracker.Middleware;
 using LifeTracker.Services;
 using LifeTracker.Services.Background;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Npgsql;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -23,17 +21,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, config) =>
     config.ReadFrom.Configuration(context.Configuration).Enrich.FromLogContext());
 
-
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
-var JWT = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>()
-    ?? throw new InvalidOperationException("JWT section missing in appsettings");
-
-if (string.IsNullOrWhiteSpace(JWT.Key))
-    throw new InvalidOperationException("JWT:Key missing");
+// add JWT config
+builder.Services.AddOptions<JwtOptions>().Bind(builder.Configuration.GetSection(JwtOptions.Section))
+    .Validate(jwt => !string.IsNullOrWhiteSpace(jwt.Key), "JWT:Key missing").ValidateOnStart();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(o =>
     {
+        // another seperate JWT in here to avoid conflicting with tests
+        var JWT = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>()
+                  ?? throw new InvalidOperationException("JWT section missing");
+
         o.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -62,7 +60,7 @@ builder.Services.AddOpenApi(options =>
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
         // Set order of tag groups in Scalar/OpenAPI
-        document.Tags = new List<Microsoft.OpenApi.OpenApiTag>
+        document.Tags = new List<OpenApiTag>
         {
             new() { Name = "Buienradar" },
             new() { Name = "Garmin" },
@@ -96,18 +94,24 @@ builder.Services.AddHttpClient<ActivityWatchService>(client =>
 builder.Services.AddHttpClient<GarminBridgeService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:GarminConnect"));
 
-// get DB credentials and config from appsettings
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// skip DB setup if in test environment due to conflicts 
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                           ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString, sqlOptions =>
-    {
-        sqlOptions.CommandTimeout(30);
-    }));
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(connectionString, sqlOptions =>
+        {
+            sqlOptions.CommandTimeout(30);
+        }));
+}
 
 
 var app = builder.Build();
+
+// retrieve JWT options again post build so it respects test overrides
+var JWT = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
 
 if (app.Environment.IsDevelopment())
 {
@@ -150,7 +154,7 @@ api.MapRoomClimateEndpoints();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
 {
-    app.MapOpenApi().AllowAnonymous(); 
+    app.MapOpenApi().AllowAnonymous();
     app.MapScalarApiReference(options =>
     {
         options.WithOpenApiRoutePattern("/openapi/v1.json");
@@ -160,7 +164,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
         options.AddHttpAuthentication("Bearer", auth =>
         {
             auth.Token = JwtTokenGenerator.Generate(JWT);
-    });
+        });
     }).AllowAnonymous();
 
     app.Lifetime.ApplicationStarted.Register(() =>
@@ -169,7 +173,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
         Console.WriteLine($"\nView and test all endpoints in Scalar UI: {url}\n");
     });
 }
-
 
 
 api.MapPost("/auth/token", (TokenRequest request) =>
@@ -196,22 +199,24 @@ using (var scope = app.Services.CreateScope())
 
     if (db.Database.IsRelational()) // a check for more extensive integration tests later
     {
-    const int attempts = 10;
-    for (var i = 1; i <= attempts; i++)
-    {
-        try
+        const int attempts = 10;
+        for (var i = 1; i <= attempts; i++)
         {
-            await db.Database.MigrateAsync();
-            app.Logger.LogInformation("Database migrated");
-            break;
-        }
-        catch (Npgsql.NpgsqlException ex) when (i < attempts)
-        {
-            app.Logger.LogWarning(ex, "Database not ready (attempt {Attempt}/{Total}). Start Postgres: docker compose up -d db", i, attempts);
-            await Task.Delay(2000);
+            try
+            {
+                await db.Database.MigrateAsync();
+                app.Logger.LogInformation("Database migrated");
+                break;
+            }
+            catch (NpgsqlException ex) when (i < attempts)
+            {
+                app.Logger.LogWarning(ex,
+                    "Database not ready (attempt {Attempt}/{Total}). Start Postgres: docker compose up -d db", i,
+                    attempts);
+                await Task.Delay(2000);
+            }
         }
     }
-}
 
     if (app.Environment.IsEnvironment("Demo"))
     {

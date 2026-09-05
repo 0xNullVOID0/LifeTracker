@@ -2,7 +2,7 @@
 using static LifeTracker.Mappers.GarminMapping;
 
 
-namespace LifeTracker.Tests.Mappers;
+namespace LifeTracker.Tests.Garmin.Mappers;
 
 public class DailyStressMappingTests
 {

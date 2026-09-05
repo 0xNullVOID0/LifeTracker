@@ -41,7 +41,8 @@ The architecture is designed to integrate and centralize custom data sources and
 ## Quick Start
 
 > [!IMPORTANT]
-> **Note for reviewers:** This is a **personal** stack built around specific hardware, accounts, and live data streams. Because it is designed solely for a single-user(as of now), reviewers will not have a matching Garmin watch, ActivityWatch instance, or physical ESP32 sensor. However, by default the repository runs in **Demo Mode** with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes)  You can spin up the stack very easily with Docker Compose to explore the OpenAPI/Scalar UI and test all(Garmin) `GET` endpoints without anything else required.
+> **Note for reviewers:** This is a **personal** stack built around specific hardware, accounts, and live data streams. Because it is designed solely for a single-user(as of now), reviewers will not have a matching Garmin watch, ActivityWatch instance, or physical ESP32 sensor. 
+However, by default the repository runs in **Demo Mode** with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can spin up the stack very easily with Docker Compose to explore the OpenAPI/Scalar UI and test all Garmin `GET` & Buienradar endpoints without anything else required.
 > Also Everything is **still HTTP instead of HTTPS** since it's still local development and i haven't setup Azure deployment yet.
 
 
@@ -49,7 +50,7 @@ The architecture is designed to integrate and centralize custom data sources and
 
 Run the full stack in Demo Mode out of the box:
 
-Skip if you don't have a garmin account and or no real data on there to use, docker will skip by default for demo environment 
+**Skip if** you don't have a garmin account and or no real data on there to use, docker will skip by default for demo environment 
 ```bash
 cp Bridges/garmin_bridge/.env.example Bridges/garmin_bridge/.env
 # fill GARMIN_EMAIL / GARMIN_PASSWORD only if you want live sync

@@ -44,11 +44,11 @@ def health():
    return {"status": "ok"}
 
 def resolve_date(date_str: str | None) -> date:
-    """None → today. Reject future dates with 404."""
+    """None → today. Reject future dates with 400."""
     target = date.today() if date_str is None else date.fromisoformat(date_str)
     if target > date.today():
         raise HTTPException(
-            status_code=404,
+            status_code=400,
             detail=f"No data for future date {target.isoformat()}",
         )
     return target

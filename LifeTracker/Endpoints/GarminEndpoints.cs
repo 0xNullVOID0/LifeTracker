@@ -46,12 +46,6 @@ public static class GarminEndpoints
             .ConfigureRoute<DailySleep>("GetSleepByDay", "Get stored sleep for a specific day",
                 "Returns DailySleep from DB");
 
-        group.MapGet("/health", async (GarminBridgeService service) =>
-                await service.GarminBridgeHealthCheck() is { } data ? Results.Ok(data) : Results.StatusCode(503))
-            .WithName("GarminBridgeHealthCheck")
-            .WithDescription("Checks if the Python Garmin Connect bridge server is running").ExcludeFromDescription();
-
-
         // Sync Endpoints
         group.MapPost("/sync/heartrate", async (DateOnly? date, GarminBridgeService service) =>
                 await EnsureBridgeAvailable(service) ??

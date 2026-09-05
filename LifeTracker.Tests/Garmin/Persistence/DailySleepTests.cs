@@ -3,7 +3,7 @@ using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace LifeTracker.Tests.Persistence;
+namespace LifeTracker.Tests.Garmin.Persistence;
 
 public class DailySleepTests
 {

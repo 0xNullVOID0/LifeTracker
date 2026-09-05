@@ -1,21 +1,22 @@
-﻿using LifeTracker;
-using LifeTracker.Entities.Garmin;
+﻿using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace LifeTracker.Tests.Persistence;
+namespace LifeTracker.Tests.Garmin.Persistence;
 
 public class DailyStressTests
 {
     static AppDbContext CreateDb()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
         return new AppDbContext(options);
     }
 
     static GarminBridgeService CreateService(AppDbContext db) =>
-        new(new HttpClient { BaseAddress = new Uri("http://127.0.0.1/") }, db, NullLogger<GarminBridgeService>.Instance);
+        new(new HttpClient { BaseAddress = new Uri("http://127.0.0.1/") }, db,
+            NullLogger<GarminBridgeService>.Instance);
 
     [Fact]
     public async Task SaveDailyStress_TwiceSameDate_UpdatesSingleRow()

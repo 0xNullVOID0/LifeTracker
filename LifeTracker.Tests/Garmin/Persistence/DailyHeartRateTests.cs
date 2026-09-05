@@ -1,21 +1,22 @@
-﻿using LifeTracker;
-using LifeTracker.Entities.Garmin;
+﻿using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace LifeTracker.Tests.Persistence;
+namespace LifeTracker.Tests.Garmin.Persistence;
 
 public class DailyHeartRateTests
 {
     static AppDbContext CreateDb()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
         return new AppDbContext(options);
     }
 
     static GarminBridgeService CreateService(AppDbContext db) =>
-        new(new HttpClient { BaseAddress = new Uri("http://127.0.0.1/") }, db, NullLogger<GarminBridgeService>.Instance);
+        new(new HttpClient { BaseAddress = new Uri("http://127.0.0.1/") }, db,
+            NullLogger<GarminBridgeService>.Instance);
 
     static DailyHeartRate Day(DateOnly date, int resting, params int[] bpms) => new()
     {
@@ -26,7 +27,9 @@ public class DailyHeartRateTests
         Samples = bpms.Select((bpm, i) => new HeartRateSample
         {
             Date = date,
-            Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(1787063520000 + i * 120_000), // create +2 min incremented timestamps for each sample just like official API
+            Timestamp =
+                DateTimeOffset.FromUnixTimeMilliseconds(1787063520000 +
+                                                        i * 120_000), // create +2 min incremented timestamps for each sample just like official API
             BPM = bpm
         }).ToList()
     };
@@ -62,7 +65,8 @@ public class DailyHeartRateTests
         // Also check if related HeartRateSample rows have been replaced instead of duplicated
         var saved = await db.DailyHeartRates.Include(d => d.Samples).SingleAsync();
         Assert.Equal(55, saved.RestingRate);
-        Assert.Equal(2, saved.Samples.Count); // should only be 2 instead of 4 since the previous with same timestamps get replaced
+        Assert.Equal(2,
+            saved.Samples.Count); // should only be 2 instead of 4 since the previous with same timestamps get replaced
         Assert.DoesNotContain(saved.Samples, s => s.BPM == 56);
         Assert.Contains(saved.Samples, s => s.BPM == 62);
     }
