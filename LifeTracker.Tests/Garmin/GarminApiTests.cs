@@ -61,6 +61,7 @@ public class GarminApiTests(LifeTrackerApiFactory factory) : IClassFixture<LifeT
         
     }
     
+    #region /heartrate
     [Fact]
     public async Task GetHeartRate_ExistingDate_Returns200()
     {
@@ -144,4 +145,5 @@ public class GarminApiTests(LifeTrackerApiFactory factory) : IClassFixture<LifeT
         var res = await anon.GetAsync("/api/garmin/heartrate");
         Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
     }
+    #endregion
 }

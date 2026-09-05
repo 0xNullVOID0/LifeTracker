@@ -1,4 +1,5 @@
-﻿using LifeTracker.Entities.Garmin;
+﻿using System.Text;
+using LifeTracker.Entities.Garmin;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LifeTracker.Tests.Garmin;
