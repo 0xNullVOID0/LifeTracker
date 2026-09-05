@@ -75,6 +75,23 @@ public partial class GarminBridgeService(
 
     #region Bridge & Sync
 
+    public async Task<bool> IsBridgeAvailable()
+    {
+        try
+        {
+            using var response = await httpclient.GetAsync("health");
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+        catch (TaskCanceledException)
+        {
+            return false;
+        }
+    }
+
     // TODO turn into background task or something and cancellation tokens? since its such a long duration function
     // Function for syncing larger stretches of Garming data such as for a first time setup
     public async Task<BackfillResult> SyncRecentDays(int days = 14)

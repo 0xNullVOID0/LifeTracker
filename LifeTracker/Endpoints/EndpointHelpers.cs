@@ -8,8 +8,10 @@ public static class EndpointHelpers
 
     public static RouteHandlerBuilder ConfigureRoute<T>(this RouteHandlerBuilder builder, string name, string summary, string description) =>
         builder.WithName(name).WithSummary(summary).WithDescription(description)
-               .Produces<T>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent)
-               .ProducesProblem(StatusCodes.Status400BadRequest);
+            .Produces<T>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
+
     public static bool IsFuture(DateOnly date) => date > DateOnly.FromDateTime(DateTime.Today);
 
     public static IResult? ValidateDate(DateOnly? date, out DateOnly targetDate)
