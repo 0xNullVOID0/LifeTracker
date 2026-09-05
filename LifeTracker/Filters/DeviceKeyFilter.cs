@@ -12,19 +12,18 @@ public static class DeviceKeyFilter
         var opts = ctx.HttpContext.RequestServices.GetRequiredService<IOptions<ESP32Options>>().Value;
 
         if (string.IsNullOrWhiteSpace(opts.APIkey) || string.IsNullOrWhiteSpace(opts.DeviceID))
-            return Results.Json(new { error = "ESP32 ingest is not configured" }, statusCode: StatusCodes.Status503ServiceUnavailable);
+            return Results.Json(new { error = "ESP32 ingest is not configured" },
+                statusCode: StatusCodes.Status503ServiceUnavailable);
 
         var deviceID = ctx.HttpContext.Request.Headers["X-Device-ID"].ToString();
         var apiKey = ctx.HttpContext.Request.Headers["X-API-Key"].ToString();
 
-        var idOk = CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(deviceID),
-            Encoding.UTF8.GetBytes(opts.DeviceID));
-
-        var keyOk = CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(apiKey),
-            Encoding.UTF8.GetBytes(opts.APIkey));
+        var idOk = FixedEquals(deviceID, opts.DeviceID);
+        var keyOk = FixedEquals(apiKey, opts.APIkey);
 
         if (!idOk || !keyOk)
-            return Results.Json(new { error = "Invalid device credentials" }, statusCode: StatusCodes.Status401Unauthorized);
+            return Results.Json(new { error = "Invalid device credentials" },
+                statusCode: StatusCodes.Status401Unauthorized);
 
         return await next(ctx);
     }
