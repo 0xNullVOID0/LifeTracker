@@ -19,6 +19,50 @@ public class GarminApiTests(LifeTrackerApiFactory factory) : IClassFixture<LifeT
 
     public Task DisposeAsync() => Task.CompletedTask;
 
+    // TODO add sync tests
+    // TODO add timezone midnight few minute difference tests
+    // TODO add json body check tests instead of only checking status code
+
+    [Fact]
+    public async Task GetHeartRate_ExistingDate_Returns200()
+    {
+        var date = new DateOnly(2026, 8, 20);
+        await SeedHeartRateAsync(factory, date);
+
+        var res = await _client.GetAsync($"/api/garmin/heartrate?date={date:yyyy-MM-dd}");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetHeartRate_NoDateParam_DefaultsToToday_WithExistingData_Returns200()
+    {
+        var datetime = DateTime.Today;
+        var date = DateOnly.FromDateTime(datetime);
+        await SeedHeartRateAsync(factory, date);
+
+        var res = await _client.GetAsync($"/api/garmin/heartrate");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetHeartRate_ExistingData_WrongDate_Returns204()
+    {
+        var date = new DateOnly(2026, 8, 20);
+        await SeedHeartRateAsync(factory, date);
+
+        date = date.AddDays(1);
+        var res = await _client.GetAsync($"/api/garmin/heartrate?date={date:yyyy-MM-dd}");
+        Assert.Equal(HttpStatusCode.NoContent, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetHeartRate_NoDateParam_WithoutData_Returns204()
+    {
+        var res = await _client.GetAsync("/api/garmin/heartrate");
+        Assert.Equal(HttpStatusCode.NoContent, res.StatusCode);
+    }
+
+
     [Fact]
     public async Task GetHeartRate_MissingDay_Returns204()
     {
@@ -30,6 +74,28 @@ public class GarminApiTests(LifeTrackerApiFactory factory) : IClassFixture<LifeT
     public async Task GetHeartRate_FutureDate_Returns400()
     {
         var res = await _client.GetAsync("/api/garmin/heartrate?date=2099-01-01");
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetHeartRate_FaultyDateParam_Returns400()
+    {
+        var res = await _client.GetAsync("/api/garmin/heartrate?date=aaa");
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetHeartRate_ImpossibleDateParam_Returns400()
+    {
+        // queries non existent february 30th
+        var res = await _client.GetAsync("/api/garmin/heartrate?date=2026-02-30");
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetHeartRate_13thMonth_Returns400()
+    {
+        var res = await _client.GetAsync("/api/garmin/heartrate?date=2026-13-13");
         Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
     }
 
