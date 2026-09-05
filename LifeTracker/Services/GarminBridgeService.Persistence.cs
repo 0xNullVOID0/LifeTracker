@@ -8,7 +8,7 @@ namespace LifeTracker.Services;
 public partial class GarminBridgeService
 {
     // Upserts DailyHeartRate with it's related HeartRateSamples
-    public async Task SaveDailyHeartRate(DailyHeartRate dailyHeart)
+    internal async Task SaveDailyHeartRate(DailyHeartRate dailyHeart)
     {
         if (dailyHeart is null)
             return;
@@ -16,7 +16,7 @@ public partial class GarminBridgeService
         try
         {
             // Check if a record already exists for this date including possible child HeartRateSamples
-            var existing = await _context.DailyHeartRates
+            var existing = await context.DailyHeartRates
                 .Include(d => d.Samples)
                 .FirstOrDefaultAsync(d => d.Date == dailyHeart.Date);
 
@@ -28,7 +28,7 @@ public partial class GarminBridgeService
                 existing.Max = dailyHeart.Max;
 
                 // Delete old samples from the context to prevent orphaned records/foreign key conflicts
-                _context.HeartRateSamples.RemoveRange(existing.Samples);
+                context.HeartRateSamples.RemoveRange(existing.Samples);
 
                 // Attach the new sample list
                 existing.Samples = dailyHeart.Samples;
@@ -36,14 +36,14 @@ public partial class GarminBridgeService
             else
             {
                 // Insert new entity along with its samples
-                _context.DailyHeartRates.Add(dailyHeart);
+                context.DailyHeartRates.Add(dailyHeart);
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "Database error occurred while trying to save/update DailyHeartRate for date {Date}.", dailyHeart.Date);
+            logger.LogError(ex, "Database error occurred while trying to save/update DailyHeartRate for date {Date}.", dailyHeart.Date);
             throw;
         }
     }
@@ -51,7 +51,7 @@ public partial class GarminBridgeService
     // TODO proper handling of same timestamp data, either all local or all gmt,
 
     // Upserts DailySleep with it's related HeartRateSamples
-    public async Task SaveDailySleep(DailySleep dailySleep, List<GarminTimeSampleDto>? heartRates)
+    internal async Task SaveDailySleep(DailySleep dailySleep, List<GarminTimeSampleDto>? heartRates)
     {
         if (dailySleep is null)
             return;
@@ -60,7 +60,7 @@ public partial class GarminBridgeService
 
         try
         {
-            var existing = await _context.DailySleeps.FirstOrDefaultAsync(x => x.Date == date);
+            var existing = await context.DailySleeps.FirstOrDefaultAsync(x => x.Date == date);
 
             // TODO handle multiple sleep per day, checkout naps too
             // update existing values
@@ -78,7 +78,7 @@ public partial class GarminBridgeService
             }
             else
             {
-                _context.DailySleeps.Add(dailySleep);
+                context.DailySleeps.Add(dailySleep);
             }
 
             // map incoming DTOs into a lookup dictionary by timestamp
@@ -92,7 +92,7 @@ public partial class GarminBridgeService
                 var timestamps = incomingSamples.Keys.ToList();
 
                 // find any existing HeartRateSamples in DB by timestamp
-                var existingSamples = await _context.HeartRateSamples
+                var existingSamples = await context.HeartRateSamples
                     .Where(s => s.Date == date && timestamps.Contains(s.Timestamp))
                     .ToListAsync();
 
@@ -116,27 +116,27 @@ public partial class GarminBridgeService
                 if (newSamples.Count > 0)
                 {
                     // TODO if dailyheartrate for given date doesnt exist "yet" while fetching sleep for that date first we get error so always fetch dailyheart first but still catch error evne though it prob would never happen with how data would properly be fetched in order with normal use
-                    _context.HeartRateSamples.AddRange(newSamples);
+                    context.HeartRateSamples.AddRange(newSamples);
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "Database error saving DailySleep for {Date}", dailySleep.Date);
+            logger.LogError(ex, "Database error saving DailySleep for {Date}", dailySleep.Date);
             throw;
         }
     }
 
-    public async Task SaveDailyStress(DailyStress dailyStress)
+    internal async Task SaveDailyStress(DailyStress dailyStress)
     {
         if (dailyStress is null)
             return;
 
         try
         {
-            var existing = await _context.DailyStresses.FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
+            var existing = await context.DailyStresses.FirstOrDefaultAsync(d => d.Date == dailyStress.Date);
 
             // Update record if already exists
             if (existing is not null)
@@ -147,14 +147,14 @@ public partial class GarminBridgeService
             }
             else
             {
-                _context.DailyStresses.Add(dailyStress);
+                context.DailyStresses.Add(dailyStress);
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "Database error occurred while trying to save/update DailyStress for date {Date}.", dailyStress.Date);
+            logger.LogError(ex, "Database error occurred while trying to save/update DailyStress for date {Date}.", dailyStress.Date);
             throw;
         }
     }

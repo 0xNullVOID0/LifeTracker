@@ -256,8 +256,7 @@ insert_final_newline = true
 csharp_style_namespace_declarations = file_scoped:warning # Enforce file_scoped namespaces with warnings
 
 # Code style defaults
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_expression_bodied_methods = when_possible:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
 
 # Formatting
 indent_style = space

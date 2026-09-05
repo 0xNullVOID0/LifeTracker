@@ -5,39 +5,29 @@ using static LifeTracker.Mappers.GarminMapping;
 
 namespace LifeTracker.Services;
 
-public partial class GarminBridgeService
+public partial class GarminBridgeService(HttpClient httpclient, AppDbContext context, 
+    ILogger<GarminBridgeService> logger)
 {
-    private readonly HttpClient _httpClient;
-    private readonly AppDbContext _context;
-    private readonly ILogger<GarminBridgeService> _logger;
-
-    public GarminBridgeService(HttpClient httpclient, AppDbContext context, ILogger<GarminBridgeService> logger)
-    {
-        _httpClient = httpclient;
-        _context = context;
-        _logger = logger;
-    }
-
     #region Getters
     public async Task<DailyHeartRate?> GetHeartRateByDay(DateOnly date) =>
-        await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
+        await context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
 
     public async Task<DailyStress?> GetStressByDay(DateOnly date) =>
-        await _context.DailyStresses.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+        await context.DailyStresses.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
 
     public async Task<DailySleep?> GetSleepByDay(DateOnly date) =>
-        await _context.DailySleeps.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
+        await context.DailySleeps.AsNoTracking().FirstOrDefaultAsync(d => d.Date == date);
 
     public async Task<object?> GarminBridgeHealthCheck() =>
-        await _httpClient.GetFromJsonAsync<object?>("health");
+        await httpclient.GetFromJsonAsync<object?>("health");
 
 
     // Gets all Garmin data from DB by date
     public async Task<GarminDay?> GetAllDataByDay(DateOnly date)
     {
-        var heart = await GetHeartRateByDay(date);
-        var stress = await GetStressByDay(date);
-        var sleep = await GetSleepByDay(date);
+        DailyHeartRate? heart = await GetHeartRateByDay(date);
+        DailyStress? stress = await GetStressByDay(date);
+        DailySleep? sleep = await GetSleepByDay(date);
 
         if (heart is null && stress is null && sleep is null)
             return null;
@@ -47,9 +37,9 @@ public partial class GarminBridgeService
 
     public async Task<IReadOnlyList<GarminDay>> GetAllGarminDays()
     {
-        var heartRates = await _context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).ToListAsync();
-        var stresses = await _context.DailyStresses.AsNoTracking().ToListAsync();
-        var sleeps = await _context.DailySleeps.AsNoTracking().ToListAsync();
+        List<DailyHeartRate> heartRates = await context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).ToListAsync();
+        List<DailyStress> stresses = await context.DailyStresses.AsNoTracking().ToListAsync();
+        List<DailySleep> sleeps = await context.DailySleeps.AsNoTracking().ToListAsync();
 
         // index records by date for fast lookup and combining
         var heartByDate = heartRates.ToDictionary(x => x.Date);
@@ -59,7 +49,7 @@ public partial class GarminBridgeService
         // get all possible dates across the entities, newest to oldest
         var dates = heartByDate.Keys.Union(stressByDate.Keys).Union(sleepByDate.Keys).OrderByDescending(d => d);
 
-        var days = new List<GarminDay>();
+        List<GarminDay> days = [];
         foreach (var date in dates)
         {
             heartByDate.TryGetValue(date, out var heart);
@@ -84,7 +74,7 @@ public partial class GarminBridgeService
     public async Task<BackfillResult> SyncRecentDays(int days = 14)
     {
         days = Math.Clamp(days, 1, 31); // cap backfill to 1 month to prevent overloading the Garmin API and getting rate limited. TODO add slower background task later for syncing long term profile data
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
         int synced = 0;
         int empty = 0;
 
@@ -101,7 +91,7 @@ public partial class GarminBridgeService
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogWarning(ex, "Backfill stopped at {Date}", date);
+                logger.LogWarning(ex, "Backfill stopped at {Date}", date);
                 return new BackfillResult(synced, empty, StoppedAt: date, Error: ex.Message);
             }
 
@@ -117,8 +107,8 @@ public partial class GarminBridgeService
     // Helper function for all sync functions
     private async Task<T?> FetchFromBridgeAsync<T>(string endpoint, DateOnly date)
     {
-        var url = $"{endpoint}?date={date:yyyy-MM-dd}";
-        using var response = await _httpClient.GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
+        string url = $"{endpoint}?date={date:yyyy-MM-dd}";
+        using var response = await httpclient.GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
 
         if (response.StatusCode is System.Net.HttpStatusCode.NoContent   // 204 empty
                                 or System.Net.HttpStatusCode.NotFound)   // 404 future
@@ -133,9 +123,9 @@ public partial class GarminBridgeService
     // Syncs all Garmin data from the official API via the python GarminConnect bridge and upserts into DB
     public async Task<GarminDay?> SyncAllDataByDay(DateOnly date)
     {
-        var heart = await SyncHeartRateByDay(date);
-        var stress = await SyncStressLevelByDay(date);
-        var sleep = await SyncSleepByDay(date);
+        DailyHeartRate? heart = await SyncHeartRateByDay(date);
+        DailyStress? stress = await SyncStressLevelByDay(date);
+        DailySleep? sleep = await SyncSleepByDay(date);
 
         if (heart is null && stress is null && sleep is null)
             return null;
@@ -149,7 +139,7 @@ public partial class GarminBridgeService
         if (heartDTO is null)
             return null;
 
-        var dailyHeart = MapToEntity(heartDTO);
+        DailyHeartRate dailyHeart = MapToEntity(heartDTO);
         await SaveDailyHeartRate(dailyHeart);
         return dailyHeart;
     }
@@ -160,7 +150,7 @@ public partial class GarminBridgeService
         if (stressDTO is null)
             return null;
 
-        var dailyStress = MapToEntity(stressDTO);
+        DailyStress dailyStress = MapToEntity(stressDTO);
         await SaveDailyStress(dailyStress);
         return dailyStress;
     }
@@ -171,7 +161,7 @@ public partial class GarminBridgeService
         if (sleepDTO is null)
             return null;
 
-        var dailySleep = MapToEntity(sleepDTO);
+        DailySleep dailySleep = MapToEntity(sleepDTO);
         await SaveDailySleep(dailySleep, sleepDTO.SleepHeartRate);
         return dailySleep;
     }
