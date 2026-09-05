@@ -1,14 +1,18 @@
-using LifeTracker.Dtos.Garmin;
+using System.Net;
+using LifeTracker.DTOs.Garmin;
 using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
 using static LifeTracker.Mappers.GarminMapping;
 
 namespace LifeTracker.Services;
 
-public partial class GarminBridgeService(HttpClient httpclient, AppDbContext context, 
+public partial class GarminBridgeService(
+    HttpClient httpclient,
+    AppDbContext context,
     ILogger<GarminBridgeService> logger)
 {
     #region Getters
+
     public async Task<DailyHeartRate?> GetHeartRateByDay(DateOnly date) =>
         await context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).FirstOrDefaultAsync(d => d.Date == date);
 
@@ -37,7 +41,8 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
 
     public async Task<IReadOnlyList<GarminDay>> GetAllGarminDays()
     {
-        List<DailyHeartRate> heartRates = await context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).ToListAsync();
+        List<DailyHeartRate> heartRates =
+            await context.DailyHeartRates.AsNoTracking().Include(d => d.Samples).ToListAsync();
         List<DailyStress> stresses = await context.DailyStresses.AsNoTracking().ToListAsync();
         List<DailySleep> sleeps = await context.DailySleeps.AsNoTracking().ToListAsync();
 
@@ -65,6 +70,7 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
 
         return days;
     }
+
     #endregion
 
     #region Bridge & Sync
@@ -73,7 +79,8 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
     // Function for syncing larger stretches of Garming data such as for a first time setup
     public async Task<BackfillResult> SyncRecentDays(int days = 14)
     {
-        days = Math.Clamp(days, 1, 31); // cap backfill to 1 month to prevent overloading the Garmin API and getting rate limited. TODO add slower background task later for syncing long term profile data
+        days = Math.Clamp(days, 1,
+            31); // cap backfill to 1 month to prevent overloading the Garmin API and getting rate limited. TODO add slower background task later for syncing long term profile data
         DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
         int synced = 0;
         int empty = 0;
@@ -108,10 +115,12 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
     private async Task<T?> FetchFromBridgeAsync<T>(string endpoint, DateOnly date)
     {
         string url = $"{endpoint}?date={date:yyyy-MM-dd}";
-        using var response = await httpclient.GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
+        using var
+            response = await httpclient
+                .GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
 
-        if (response.StatusCode is System.Net.HttpStatusCode.NoContent   // 204 empty
-                                or System.Net.HttpStatusCode.NotFound)   // 404 future
+        if (response.StatusCode is HttpStatusCode.NoContent // 204 empty
+            or HttpStatusCode.NotFound) // 404 future
             return default;
 
         if (!response.IsSuccessStatusCode)
@@ -135,7 +144,7 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
 
     public async Task<DailyHeartRate?> SyncHeartRateByDay(DateOnly date)
     {
-        var heartDTO = await FetchFromBridgeAsync<DailyHeartRateDto>("heartrate", date);
+        var heartDTO = await FetchFromBridgeAsync<DailyHeartRateDTO>("heartrate", date);
         if (heartDTO is null)
             return null;
 
@@ -146,7 +155,7 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
 
     public async Task<DailyStress?> SyncStressLevelByDay(DateOnly date)
     {
-        var stressDTO = await FetchFromBridgeAsync<DailyStressDto>("stress", date);
+        var stressDTO = await FetchFromBridgeAsync<DailyStressDTO>("stress", date);
         if (stressDTO is null)
             return null;
 
@@ -157,7 +166,7 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
 
     public async Task<DailySleep?> SyncSleepByDay(DateOnly date)
     {
-        var sleepDTO = await FetchFromBridgeAsync<SleepResponseDto>("sleep", date);
+        var sleepDTO = await FetchFromBridgeAsync<SleepResponseDTO>("sleep", date);
         if (sleepDTO is null)
             return null;
 
@@ -165,5 +174,6 @@ public partial class GarminBridgeService(HttpClient httpclient, AppDbContext con
         await SaveDailySleep(dailySleep, sleepDTO.SleepHeartRate);
         return dailySleep;
     }
+
     #endregion
 }

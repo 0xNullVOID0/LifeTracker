@@ -1,14 +1,13 @@
-using LifeTracker.Dtos.Buienradar;
+using LifeTracker.DTOs.Buienradar;
 using LifeTracker.Entities.Buienradar;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace LifeTracker.Services;
 
 public class BuienradarService
 {
-    private readonly HttpClient _httpClient;
     private readonly AppDbContext _context;
+    private readonly HttpClient _httpClient;
 
     public BuienradarService(HttpClient httpclient, AppDbContext context)
     {
@@ -29,7 +28,7 @@ public class BuienradarService
         var station = data?.Actual?.StationMeasurements?
             .FirstOrDefault(s => s.StationName.Contains("Heino") || s.StationID == 6278); // TODO make configurable
 
-        if (station != null) 
+        if (station != null)
             await SaveMeasurement(station);
         return station;
     }
@@ -43,7 +42,8 @@ public class BuienradarService
         measurement.Timestamp = new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(unspecified, timeZone));
 
         // Check if record with composite PK already exists or not before trying to save
-        var existing = await _context.BuienradarStationMeasurements.FindAsync(measurement.StationID, measurement.Timestamp);
+        var existing =
+            await _context.BuienradarStationMeasurements.FindAsync(measurement.StationID, measurement.Timestamp);
 
         if (existing is null)
         {
@@ -52,4 +52,3 @@ public class BuienradarService
         }
     }
 }
-

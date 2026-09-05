@@ -1,5 +1,5 @@
 ﻿using LifeTracker.Configuration;
-using LifeTracker.Dtos.ActivityWatch;
+using LifeTracker.DTOs.ActivityWatch;
 using LifeTracker.Entities.ActivityWatch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -8,12 +8,13 @@ namespace LifeTracker.Services;
 
 public class ActivityWatchService
 {
-    private readonly HttpClient _httpClient;
     private readonly AppDbContext _context;
-    private readonly ActivityWatchOptions _options;
+    private readonly HttpClient _httpClient;
     private readonly ILogger<ActivityWatchService> _logger;
+    private readonly ActivityWatchOptions _options;
 
-    public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchOptions> options, ILogger<ActivityWatchService> logger)
+    public ActivityWatchService(HttpClient httpclient, AppDbContext context, IOptions<ActivityWatchOptions> options,
+        ILogger<ActivityWatchService> logger)
     {
         _httpClient = httpclient;
         _context = context;
@@ -49,7 +50,7 @@ public class ActivityWatchService
         string url = $"buckets/{bucketID}/events";
 
         // Get JSON activity events from local ActivityWatch API for the specific bucket ID
-        var events_dtos = await _httpClient.GetFromJsonAsync<List<ActivityEventDto>>(url);
+        var events_dtos = await _httpClient.GetFromJsonAsync<List<ActivityEventDTO>>(url);
 
         if (events_dtos is null || events_dtos.Count == 0)
             return null;
@@ -90,7 +91,7 @@ public class ActivityWatchService
             url += $"?start={Uri.EscapeDataString(isoStartTime)}";
         }
 
-        var events_dtos = await _httpClient.GetFromJsonAsync<List<ActivityEventDto>>(url);
+        var events_dtos = await _httpClient.GetFromJsonAsync<List<ActivityEventDTO>>(url);
 
         // check if new events exist or not
         if (events_dtos is null || events_dtos.Count == 0)
@@ -139,10 +140,12 @@ public class ActivityWatchService
     }
 
     // helper function to remove redundant/repeated DTO to entity mapping
-    private static ActivityEvent MapToEntity(ActivityEventDto dto) => new()
+    private static ActivityEvent MapToEntity(ActivityEventDTO dto) => new()
     {
         AwID = dto.ID,
-        Timestamp = dto.Timestamp.ToUniversalTime(), // needs to be universal time for postgres otherwise wont accept and gives error
+        Timestamp =
+            dto.Timestamp
+                .ToUniversalTime(), // needs to be universal time for postgres otherwise wont accept and gives error
         Duration = dto.Duration,
         App = dto.Data.App ?? string.Empty,
         Title = dto.Data.Title ?? string.Empty

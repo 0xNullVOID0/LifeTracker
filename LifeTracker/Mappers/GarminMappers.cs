@@ -1,11 +1,11 @@
-using LifeTracker.Dtos.Garmin;
+using LifeTracker.DTOs.Garmin;
 using LifeTracker.Entities.Garmin;
 
 namespace LifeTracker.Mappers;
 
 public static class GarminMapping
 {
-    internal static DailyHeartRate MapToEntity(DailyHeartRateDto dto) => new()
+    internal static DailyHeartRate MapToEntity(DailyHeartRateDTO dto) => new()
     {
         Date = dto.CalendarDate,
         RestingRate = dto.RestingHeartRate,
@@ -22,14 +22,12 @@ public static class GarminMapping
             }).ToList() ?? new List<HeartRateSample>()
     };
 
-    internal static DailyStress MapToEntity(DailyStressDto dto) => new()
+    internal static DailyStress MapToEntity(DailyStressDTO dto) => new()
     {
-        Date = dto.CalendarDate,
-        Average = dto.AvgStressLevel,
-        Max = dto.MaxStressLevel,
+        Date = dto.CalendarDate, Average = dto.AvgStressLevel, Max = dto.MaxStressLevel,
     };
 
-    internal static DailySleep MapToEntity(SleepResponseDto dto)
+    internal static DailySleep MapToEntity(SleepResponseDTO dto)
     {
         var d = dto.DailySleep;
         var date = d.CalendarDate;
@@ -46,6 +44,4 @@ public static class GarminMapping
             AvgSleepStress = (int)d.AvgSleepStress,
         };
     }
-
 }
-

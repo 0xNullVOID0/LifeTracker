@@ -1,19 +1,17 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LifeTracker.Dtos.Garmin;
+namespace LifeTracker.DTOs.Garmin;
 
 // TOOD rename to DailyStressLevel?
-public class DailyStressDto
+public sealed record DailyStressDTO
 {
-    [JsonPropertyName("calendarDate")]
-    public DateOnly CalendarDate { get; set; }
+    [JsonPropertyName("calendarDate")] public DateOnly CalendarDate { get; set; }
 
     [JsonPropertyName("startTimestampGMT")]
     public DateTime StartTimestampGmt { get; set; }
 
-    [JsonPropertyName("endTimestampGMT")]
-    public DateTime EndTimestampGmt { get; set; }
+    [JsonPropertyName("endTimestampGMT")] public DateTime EndTimestampGmt { get; set; }
 
     [JsonPropertyName("startTimestampLocal")]
     public DateTime StartTimestampLocal { get; set; }
@@ -21,11 +19,9 @@ public class DailyStressDto
     [JsonPropertyName("endTimestampLocal")]
     public DateTime EndTimestampLocal { get; set; }
 
-    [JsonPropertyName("maxStressLevel")]
-    public int MaxStressLevel { get; set; }
+    [JsonPropertyName("maxStressLevel")] public int MaxStressLevel { get; set; }
 
-    [JsonPropertyName("avgStressLevel")]
-    public int AvgStressLevel { get; set; }
+    [JsonPropertyName("avgStressLevel")] public int AvgStressLevel { get; set; }
 
     [JsonPropertyName("stressChartValueOffset")]
     public int StressChartValueOffset { get; set; }

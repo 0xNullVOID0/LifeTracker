@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+using LifeTracker.DTOs.Garmin;
 using LifeTracker.Entities.Garmin;
-using LifeTracker.Dtos.Garmin;
+using Microsoft.EntityFrameworkCore;
 
 namespace LifeTracker.Services;
 
@@ -43,7 +43,8 @@ public partial class GarminBridgeService
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Database error occurred while trying to save/update DailyHeartRate for date {Date}.", dailyHeart.Date);
+            logger.LogError(ex, "Database error occurred while trying to save/update DailyHeartRate for date {Date}.",
+                dailyHeart.Date);
             throw;
         }
     }
@@ -51,7 +52,7 @@ public partial class GarminBridgeService
     // TODO proper handling of same timestamp data, either all local or all gmt,
 
     // Upserts DailySleep with it's related HeartRateSamples
-    internal async Task SaveDailySleep(DailySleep dailySleep, List<GarminTimeSampleDto>? heartRates)
+    internal async Task SaveDailySleep(DailySleep dailySleep, List<GarminTimeSampleDTO>? heartRates)
     {
         if (dailySleep is null)
             return;
@@ -100,17 +101,15 @@ public partial class GarminBridgeService
                 foreach (var sample in existingSamples)
                 {
                     sample.Sleeping = true;
-                    incomingSamples.Remove(sample.Timestamp); // remove rows we updated from sleep heartrate samples, probably unneccsary but better safe than sorry for now
+                    incomingSamples.Remove(sample
+                        .Timestamp); // remove rows we updated from sleep heartrate samples, probably unneccsary but better safe than sorry for now
                 }
 
                 // TODO probably unneccsary since heart rate already gets the same by default?
                 // create new HeartRateSamples for the ones that werent already in DB
                 var newSamples = incomingSamples.Select(kvp => new HeartRateSample
                 {
-                    Date = date,
-                    Timestamp = kvp.Key,
-                    BPM = kvp.Value,
-                    Sleeping = true
+                    Date = date, Timestamp = kvp.Key, BPM = kvp.Value, Sleeping = true
                 }).ToList();
 
                 if (newSamples.Count > 0)
@@ -154,7 +153,8 @@ public partial class GarminBridgeService
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Database error occurred while trying to save/update DailyStress for date {Date}.", dailyStress.Date);
+            logger.LogError(ex, "Database error occurred while trying to save/update DailyStress for date {Date}.",
+                dailyStress.Date);
             throw;
         }
     }

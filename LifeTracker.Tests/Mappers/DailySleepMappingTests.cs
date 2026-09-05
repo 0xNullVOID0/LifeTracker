@@ -1,5 +1,4 @@
-﻿using LifeTracker.Dtos.Garmin;
-using LifeTracker.Services;
+﻿using LifeTracker.DTOs.Garmin;
 using static LifeTracker.Mappers.GarminMapping;
 
 namespace LifeTracker.Tests.Mappers;
@@ -9,9 +8,9 @@ public class DailySleepMappingTests
     [Fact]
     public void MapToEntity_CopiesSleepSummaryFields()
     {
-        var dto = new SleepResponseDto
+        var dto = new SleepResponseDTO
         {
-            DailySleep = new DailySleepDto
+            DailySleep = new DailySleepDTO
             {
                 CalendarDate = new DateOnly(2026, 8, 18),
                 SleepTimeSeconds = 22920,

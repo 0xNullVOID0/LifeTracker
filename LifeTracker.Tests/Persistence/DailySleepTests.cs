@@ -1,6 +1,4 @@
-﻿using LifeTracker;
-using LifeTracker.Dtos.Garmin;
-using LifeTracker.Entities.Garmin;
+﻿using LifeTracker.Entities.Garmin;
 using LifeTracker.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,12 +9,14 @@ public class DailySleepTests
 {
     static AppDbContext CreateDb()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
         return new AppDbContext(options);
     }
 
     static GarminBridgeService CreateService(AppDbContext db) =>
-        new(new HttpClient { BaseAddress = new Uri("http://127.0.0.1/") }, db, NullLogger<GarminBridgeService>.Instance);
+        new(new HttpClient { BaseAddress = new Uri("http://127.0.0.1/") }, db,
+            NullLogger<GarminBridgeService>.Instance);
 
     static DailySleep Sleep(DateOnly date, int total, int stress) => new()
     {

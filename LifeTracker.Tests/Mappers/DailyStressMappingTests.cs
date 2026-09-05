@@ -1,5 +1,4 @@
-﻿using LifeTracker.Dtos.Garmin;
-using LifeTracker.Services;
+﻿using LifeTracker.DTOs.Garmin;
 using static LifeTracker.Mappers.GarminMapping;
 
 
@@ -10,11 +9,9 @@ public class DailyStressMappingTests
     [Fact]
     public void MapToEntity_CopiesDateAverageAndMax()
     {
-        var dto = new DailyStressDto
+        var dto = new DailyStressDTO
         {
-            CalendarDate = new DateOnly(2026, 8, 18),
-            AvgStressLevel = 17,
-            MaxStressLevel = 87
+            CalendarDate = new DateOnly(2026, 8, 18), AvgStressLevel = 17, MaxStressLevel = 87
         };
 
         var entity = MapToEntity(dto);

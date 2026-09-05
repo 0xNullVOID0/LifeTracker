@@ -72,7 +72,7 @@ builder.Services.AddOpenApi(options =>
         }.ToHashSet();
 
         return Task.CompletedTask;
-});
+    });
 });
 
 builder.Services.AddProblemDetails();
