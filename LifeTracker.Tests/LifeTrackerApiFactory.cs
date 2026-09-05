@@ -28,6 +28,8 @@ public sealed class LifeTrackerApiFactory : WebApplicationFactory<Program>
                 ["JWT:Issuer"] = TestJWT.Options.Issuer,
                 ["JWT:Audience"] = TestJWT.Options.Audience,
                 ["JWT:Password"] = TestJWT.Options.Password,
+                
+                // set values so Program.cs doesn't crash in test env
                 ["ConnectionStrings:DefaultConnection"] = "Host=unused",
                 ["APIs:GarminConnect"] = "http://garmin-bridge/",
                 ["APIs:Buienradar"] = "http://buienradar-mock/",

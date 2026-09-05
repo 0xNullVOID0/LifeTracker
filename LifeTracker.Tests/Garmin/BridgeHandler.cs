@@ -3,7 +3,7 @@
 sealed class BridgeHandler : HttpMessageHandler
 {
     // Stub HTTP responses of the routes for external API during testing
-    public Dictionary<string, HttpResponseMessage> Responses { get; } = new();
+    public static Dictionary<string, HttpResponseMessage> Responses { get; } = new();
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
     {

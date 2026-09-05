@@ -25,4 +25,10 @@
     <ProjectReference Include="..\LifeTracker\LifeTracker.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Garmin\JSON\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

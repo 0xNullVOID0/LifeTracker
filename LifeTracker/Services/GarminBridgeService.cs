@@ -132,13 +132,11 @@ public partial class GarminBridgeService(
     private async Task<T?> FetchFromBridgeAsync<T>(string endpoint, DateOnly date)
     {
         string url = $"{endpoint}?date={date:yyyy-MM-dd}";
-        using var
-            response = await httpclient
-                .GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
+        using var response = await httpclient.GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
 
         if (response.StatusCode is HttpStatusCode.NoContent // 204 empty
-            or HttpStatusCode.NotFound) // 404 future
-            return default;
+                                or HttpStatusCode.NotFound) // 404 future
+                                return default;
 
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException($"Python Garmin Bridge error {(int)response.StatusCode} for {url}");

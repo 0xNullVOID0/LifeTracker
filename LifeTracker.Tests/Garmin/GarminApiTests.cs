@@ -24,6 +24,44 @@ public class GarminApiTests(LifeTrackerApiFactory factory) : IClassFixture<LifeT
     // TODO add json body check tests instead of only checking status code
 
     [Fact]
+    public async Task SyncStress_Returns200()
+    {
+        var date = new DateOnly(2026, 8, 20);
+        
+        BridgeHandler.Responses["health"] = new HttpResponseMessage(HttpStatusCode.OK);
+        
+        // mock for external python garmin bridge
+        BridgeHandler.Responses[$"stress?date={date:yyyy-MM-dd}"] = 
+            new HttpResponseMessage(HttpStatusCode.OK) { 
+                Content = CreateJsonContent("stress.json")
+            };
+
+        var res = await _client.PostAsync($"/api/garmin/sync/stress?date={date:yyyy-MM-dd}", null);
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+    }
+    
+    [Fact]
+    public async Task SyncStress_ValidJSON_Returns200()
+    {
+        var date = new DateOnly(2026, 9, 4);
+        
+        // mock for external python bridge health check and stress route
+        BridgeHandler.Responses["health"] = new HttpResponseMessage(HttpStatusCode.OK);
+        BridgeHandler.Responses[$"stress?date={date:yyyy-MM-dd}"] = 
+            new HttpResponseMessage(HttpStatusCode.OK) { 
+                Content = CreateJsonContent("stress.json")
+            };
+
+        var res = await _client.PostAsync($"/api/garmin/sync/stress?date={date:yyyy-MM-dd}", null);
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        
+        // check 
+        var resBody = await res.Content.ReadAsStringAsync();
+        Assert.False(string.IsNullOrEmpty(resBody));
+        
+    }
+    
+    [Fact]
     public async Task GetHeartRate_ExistingDate_Returns200()
     {
         var date = new DateOnly(2026, 8, 20);

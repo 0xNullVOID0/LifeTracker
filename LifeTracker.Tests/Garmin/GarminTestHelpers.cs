@@ -25,4 +25,12 @@ public static class GarminTestHelpers
         });
         await db.SaveChangesAsync();
     }
+    
+    public static StringContent CreateJsonContent(string file, string folder = "Garmin/JSON")
+    {
+        var jsonPath = Path.Combine([AppContext.BaseDirectory, folder, file]);
+        var jsonContent = File.ReadAllText(jsonPath);
+    
+        return new StringContent(jsonContent, Encoding.UTF8, "application/json");
+    }
 }
