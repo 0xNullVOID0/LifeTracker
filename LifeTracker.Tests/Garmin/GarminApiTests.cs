@@ -1,10 +1,23 @@
 ﻿using System.Net;
+using Microsoft.Extensions.DependencyInjection;
+using static LifeTracker.Tests.Garmin.GarminTestHelpers;
 
 namespace LifeTracker.Tests.Garmin;
 
-public class GarminApiTests(LifeTrackerApiFactory factory) : IClassFixture<LifeTrackerApiFactory>
+public class GarminApiTests(LifeTrackerApiFactory factory) : IClassFixture<LifeTrackerApiFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client = factory.CreateAuthenticatedClient();
+
+    public async Task InitializeAsync()
+    {
+        // Wipe DB before every test runs to prevent data leakage
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.EnsureDeletedAsync();
+        await db.Database.EnsureCreatedAsync(); // recreates it fresh after wipe
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task GetHeartRate_MissingDay_Returns204()
