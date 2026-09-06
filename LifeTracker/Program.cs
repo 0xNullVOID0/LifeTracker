@@ -115,6 +115,13 @@ if (!builder.Environment.IsEnvironment("Testing"))
         }));
 }
 
+// Set global clock handler for consistent date and times across the board
+builder.Services.Configure<TimeOptions>(builder.Configuration.GetSection(TimeOptions.Section));
+builder.Services.AddSingleton(TimeProvider.System); // use OS clock, tests can swap this for their own fake one
+builder.Services.AddSingleton<AppClock>();
+
+//AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
+
 
 var app = builder.Build();
 
