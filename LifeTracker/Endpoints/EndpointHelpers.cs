@@ -11,14 +11,4 @@ public static class EndpointHelpers
             .Produces<T>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
-
-    public static bool IsFuture(DateOnly date) => date > DateOnly.FromDateTime(DateTime.Today);
-
-    public static IResult? ValidateDate(DateOnly? date, out DateOnly targetDate)
-    {
-        targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
-        if (IsFuture(targetDate))
-            return Results.BadRequest(new { error = "Cannot request non existent data from future dates." });
-        return null; // means OK(no errors found)
-    }
 }
