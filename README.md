@@ -20,17 +20,20 @@ Data collection is just step one. The real power comes from combining long-term 
 
 ```mermaid
 flowchart LR
-  Watch["Smartwatch"] --> Phone["Phone"] --> GC
-  subgraph System["Protected Cluster"]
-      API[".NET API"] -->|"sync"| Bridge["Python Bridge"]
-      Bridge <-->|"fetch<br/>OAuth"| GC["Garmin"]
-      Bridge -->|"data"| API
-      API <-->|"EF Core"| DB[("Postgres")]
+  Watch[Smartwatch] --> Phone[Phone] --> GC[Garmin]
+
+  subgraph Stack["LifeTracker Backend"]
+    API[".NET API"]
+    Bridge["Python Bridge"]
+    DB[("Postgres")]
+    API <-->|"sync/</br>data"| Bridge
+    API <-->|"EF Core"| DB
   end
 
-  User["User"] -->|"JWT"| API
-  SCD["SCD40"] --> ESP["ESP32"] -->|"climate</br>API Key"| API
-  ```
+  Bridge <-->|"fetch/</br>OAuth"| GC
+  User["User/</br>Scalar"] -->|"JWT"| API
+  SCD[SCD40] --> ESP[ESP32] -->|"climate/</br>API key"| API
+```
 
 The architecture is designed to integrate and centralize custom data sources and APIs. The current metrics (Garmin smartwatch biometrics, ESP32 with room climate sensor, ActivityWatch desktop activity) represent the initial phase, with upcoming expansions for PC hardware telemetry(WIP), nutrition tracking(Cronometer), competetive game match data and with even more to come.
 
