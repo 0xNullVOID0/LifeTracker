@@ -5,6 +5,7 @@
 #include "time.h"
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <LittleFS.h>
 #include "secrets.h"
 
 #ifdef NO_ERROR
@@ -35,6 +36,9 @@ const unsigned long sensorInterval = 5000; // check sensor every 5 sec
 unsigned long lastSendTime = 0;
 const unsigned long sendInterval = 15000; // send every 15 sec
 
+const char* apiLogPath = "/api-sends.log";
+const size_t apiLogMaxBytes = 64 * 1024; // rotate when larger than 64 KB due to storage limitations on ESP32
+
 // Vars for storing climate sums to calc average
 int sampleCount = 0;
 long sumCo2 = 0;
@@ -54,18 +58,27 @@ void setup() {
         delay(100);
     }
 
-    // Wifi setup 
+    if (!LittleFS.begin(false) && !LittleFS.begin(true)) {
+        Serial.println("LittleFS mount failed; API payloads will not be logged locally");
+    } else {
+        Serial.println("LittleFS mounted");
+    }
+
+    // Wifi setup — do not block forever so the sensor still runs if the API is down
     WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
+    unsigned long wifiStart = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - wifiStart < 15000) {
         delay(500);
         Serial.print(".");
     }
-    Serial.println("\nWiFi connected");
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
-
-    // Set time from online server
-    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\nWiFi connected");
+        Serial.print("IP: ");
+        Serial.println(WiFi.localIP());
+        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    } else {
+        Serial.println("\nWiFi not available at boot; will retry on send");
+    }
 
     // Setup climate sensor
     Wire.begin();
@@ -128,27 +141,107 @@ bool getLocalTimeString(char* buffer, size_t maxLen) {
     return true;
 }
 
-// Send room climate data to .NET backend API
-void sendClimateData(int co2, double temp, double humidity) {
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi connection lost, reconnecting...");
-        WiFi.begin(ssid, password);
-        unsigned long startAttemptTime = millis();
-
-        while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
-            delay(500);
-            Serial.print(".");
-        }
-        
-        if (WiFi.status() != WL_CONNECTED) {
-            Serial.println("\nFailed to reconnect");
-            return;
-        }
-        Serial.println("\nReconnected");
+void rotateApiLogIfNeeded() {
+    File existing = LittleFS.open(apiLogPath, FILE_READ);
+    if (!existing) {
+        return;
     }
 
+    size_t size = existing.size();
+    existing.close();
+
+    if (size < apiLogMaxBytes) {
+        return;
+    }
+
+    LittleFS.remove("/api-sends.prev.log");
+    LittleFS.rename(apiLogPath, "/api-sends.prev.log");
+    Serial.println("Rotated local API log");
+}
+
+void logFailedSend(const char* timeBuffer, const char* jsonBuffer, size_t jsonLen, int httpResponseCode, const char* reason) {
+    rotateApiLogIfNeeded();
+
+    File logFile = LittleFS.open(apiLogPath, FILE_APPEND);
+    if (!logFile) {
+        Serial.println("Failed to open local API log");
+        return;
+    }
+
+    logFile.print("{\"loggedAt\":\"");
+    logFile.print(timeBuffer);
+    logFile.print("\",\"httpStatus\":");
+    logFile.print(httpResponseCode);
+    logFile.print(",\"reason\":\"");
+    logFile.print(reason);
+    logFile.print("\",\"payload\":");
+    logFile.write((const uint8_t*)jsonBuffer, jsonLen);
+    logFile.println("}");
+    logFile.close();
+}
+
+void buildClimatePayload(char* jsonBuffer, size_t jsonBufferLen, size_t* jsonLen, const char* timeBuffer, int co2, double temp, double humidity) {
+    JsonDocument json;
+    json["Timestamp"] = timeBuffer;
+    json["CO2"] = co2;
+    json["temperature"] = temp;
+    json["humidity"] = humidity;
+    *jsonLen = serializeJson(json, jsonBuffer, jsonBufferLen);
+}
+
+bool reconnectWifi() {
+    if (WiFi.status() == WL_CONNECTED) {
+        return true;
+    }
+
+    Serial.println("WiFi connection lost, reconnecting...");
+    WiFi.disconnect();
+    WiFi.begin(ssid, password);
+    unsigned long startAttemptTime = millis();
+
+    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+        delay(500);
+        Serial.print(".");
+    }
+
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("\nFailed to reconnect");
+        return false;
+    }
+
+    Serial.println("\nReconnected");
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    return true;
+}
+
+void fillTimeOrUnavailable(char* timeBuffer, size_t maxLen, bool* hasTime) {
+    *hasTime = getLocalTimeString(timeBuffer, maxLen);
+    if (*hasTime) {
+        return;
+    }
+    strncpy(timeBuffer, "unavailable", maxLen);
+    timeBuffer[maxLen - 1] = '\0';
+}
+
+// Send room climate data to .NET backend API
+void sendClimateData(int co2, double temp, double humidity) {
+    bool wifiOk = reconnectWifi();
+
     char timeBuffer[32];
-    if (!getLocalTimeString(timeBuffer, sizeof(timeBuffer))) {
+    bool hasTime = false;
+    fillTimeOrUnavailable(timeBuffer, sizeof(timeBuffer), &hasTime);
+
+    char jsonBuffer[256];
+    size_t n = 0;
+    buildClimatePayload(jsonBuffer, sizeof(jsonBuffer), &n, timeBuffer, co2, temp, humidity);
+
+    if (!wifiOk) {
+        logFailedSend(timeBuffer, jsonBuffer, n, 0, "wifi_reconnect_failed");
+        return;
+    }
+
+    if (!hasTime) {
+        logFailedSend(timeBuffer, jsonBuffer, n, 0, "time_unavailable");
         return;
     }
 
@@ -160,16 +253,12 @@ void sendClimateData(int co2, double temp, double humidity) {
     http.addHeader("X-Device-ID", deviceID);
     http.addHeader("X-API-Key", apiKey);
 
-    JsonDocument json;
-    json["Timestamp"] = timeBuffer;
-    json["CO2"] = co2;
-    json["temperature"] = temp;
-    json["humidity"] = humidity;
-
-    char jsonBuffer[256];
-    size_t n = serializeJson(json, jsonBuffer, sizeof(jsonBuffer));
-
     int httpResponseCode = http.POST((uint8_t*)jsonBuffer, n);
+
+    // Only log when POST to API failed
+    if (httpResponseCode != 200) {
+        logFailedSend(timeBuffer, jsonBuffer, n, httpResponseCode, "http");
+    }
 
     if (httpResponseCode > 0) {
         Serial.print("Send averaged data - Code: ");
