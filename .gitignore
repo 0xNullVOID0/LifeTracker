@@ -363,6 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Custom
+docker-compose.override.yml
 .idea
 .vs
 /LifeTracker/logs/

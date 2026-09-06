@@ -22,8 +22,6 @@ services:
       context: ./LifeTracker/Bridges/garmin_bridge
       dockerfile: Dockerfile
     container_name: lifetracker-garmin-bridge
-    ports:
-      - "9002:9002"
     env_file:
       - path: ./LifeTracker/Bridges/garmin_bridge/.env
         required: false
