@@ -29,6 +29,7 @@ services:
         required: false
     environment:
       GARMIN_TOKEN_DIR: /data/garminconnect
+      GARMIN_BRIDGE_API_KEY: "DefaultDemoPlaceholderApiKeyForGarminBridge"
     volumes:
       - garmin_tokens:/data/garminconnect
     healthcheck:
@@ -50,6 +51,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Demo
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=lifetracker;Username=postgres;Password=mysecretpassword
       APIs__GarminConnect: http://garmin_bridge:9002/garmin/
+      GarminBridge__ApiKey: "DefaultDemoPlaceholderApiKeyForGarminBridge"
       JWT__Key: "DefaultDemoPlaceholderSecretKeyForLifeTrackerJWT" 
       JWT__Issuer: "LifeTrackerAPI"
       JWT__Audience: "LifeTrackerClient"

@@ -3,7 +3,7 @@
 namespace LifeTracker.DTOs.Garmin;
 
 // TOOD rename to DailyStressLevel?
-public sealed class DailyHeartRateDTO
+public sealed record DailyHeartRateDTO
 {
     [JsonPropertyName("calendarDate")] public DateOnly CalendarDate { get; set; }
 

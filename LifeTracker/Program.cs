@@ -91,8 +91,16 @@ builder.Services.Configure<ActivityWatchOptions>(
 builder.Services.AddHttpClient<ActivityWatchService>(client =>
     client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:ActivityWatch:BaseUrl"));
 
+builder.Services.Configure<GarminBridgeOptions>(builder.Configuration.GetSection(GarminBridgeOptions.Section));
 builder.Services.AddHttpClient<GarminBridgeService>(client =>
-    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:GarminConnect"));
+{
+    client.BaseAddress = builder.Configuration.GetRequiredUri("APIs:GarminConnect");
+    
+    // set API key in header for python bridge auth
+    var apiKey = builder.Configuration[$"{GarminBridgeOptions.Section}:ApiKey"];
+    if (!string.IsNullOrWhiteSpace(apiKey))
+        client.DefaultRequestHeaders.TryAddWithoutValidation("X-API-Key", apiKey);
+});
 
 // skip DB setup if in test environment due to conflicts 
 if (!builder.Environment.IsEnvironment("Testing"))
@@ -132,9 +140,10 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler();
-    app.UseHttpsRedirection(); // only use HTTPS in production
+    
+    if (app.Environment.IsProduction()) 
+        app.UseHttpsRedirection(); 
 }
-
 
 app.UseMiddleware<DateQueryMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();

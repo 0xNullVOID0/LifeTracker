@@ -1,14 +1,16 @@
-﻿import os
+﻿import hmac
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import date
-from fastapi import FastAPI, HTTPException, Query, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
 
 load_dotenv()
 
 app = FastAPI(title="Garmin Connect Bridge")
 
+BRIDGE_API_KEY = os.getenv("GARMIN_BRIDGE_API_KEY", "")
 TOKEN_DIR = Path(os.getenv("GARMIN_TOKEN_DIR", str(Path.home() / ".garminconnect")))
 TOKEN_DIR.mkdir(exist_ok=True)
 
@@ -53,11 +55,25 @@ def resolve_date(date_str: str | None) -> date:
         )
     return target
 
+# for checking/comparing API key validity 
+def _fixed_equals(left: str, right: str) -> bool:
+    a, b = left.encode("utf-8"), right.encode("utf-8")
+    if len(a) != len(b):
+        return False
+    return hmac.compare_digest(a, b)
+
+def require_bridge_api_key(x_api_key = Header(default=None, alias="X-API-Key")):
+    if not BRIDGE_API_KEY.strip():
+        raise HTTPException(status_code=503, detail="Bridge API key is not configured")
+    if not _fixed_equals(x_api_key or "", BRIDGE_API_KEY):
+        raise HTTPException(status_code=401, detail="Invalid API key")
+ 
 
 @app.get("/garmin/stress")
 def get_stress(
-    response: Response,
-    date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+        response: Response,
+        date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+        _auth=Depends(require_bridge_api_key),
 ):
     target = resolve_date(date_str)
     client = get_garmin_client()
@@ -71,8 +87,9 @@ def get_stress(
 
 @app.get("/garmin/heartrate")
 def get_heart_rate(
-    response: Response,
-    date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+        response: Response,
+        date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+        _auth=Depends(require_bridge_api_key),
 ):
     target = resolve_date(date_str)
     client = get_garmin_client()
@@ -86,8 +103,9 @@ def get_heart_rate(
 
 @app.get("/garmin/sleep")
 def get_sleep(
-    response: Response,
-    date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+        response: Response,
+        date_str: str | None = Query(None, alias="date", description="YYYY-MM-DD; default today"),
+        _auth=Depends(require_bridge_api_key),
 ):
     target = resolve_date(date_str)
     client = get_garmin_client()
