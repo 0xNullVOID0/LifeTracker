@@ -204,8 +204,4 @@ Unit tests and CI should and need to be more extensive, most existing ones are f
 
 Setting up Azure environment so ESP32 can ingest room climate data 24/7, for more proper automated background services for the other components and for setting up and testing out production environment
 
-
-Still local HTTP. Azure App Service + Postgres is the next visible slice (HTTPS, ESP32 can post when the PC is off). No frontend yet; Scalar is the UI. Awake-window from sleep start/end is the first derived metric on the list. Timezones are not consistent everywhere — that is what `AppClock` is for.
-
 Very specific personal platform, not a product. Unofficial Garmin API, personal hardware, rate limits if you hammer sync. Demo compose is the supported reviewer path.
-```
