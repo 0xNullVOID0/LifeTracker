@@ -8,7 +8,7 @@ Instead of leaving personal data and metrics locked inside separate isolated "wa
 
 Data collection is just step one. The real power comes from combining long-term datasets to analyze how different aspects of daily life interact, here's some examples of the initial plan:
 
-- **Environment, Exercise & Sleep:** How room climate measurements (ESP32 with SDC40 sensor), local weather (Buienradar) and periods of regular vs less/to no exercise directly impact sleep quality and HRV.
+- **Environment, Exercise & Sleep:** How room climate measurements (ESP32 with SCD40 sensor), local weather (Buienradar) and periods of regular vs less/to no exercise directly impact sleep quality and HRV.
 
 - **Stress & Physical State:** How staying up late or changing exercise frequency can impact baseline resting heart rate over weeks or months.
 
@@ -19,7 +19,7 @@ Data collection is just step one. The real power comes from combining long-term 
 > [!IMPORTANT]
 > **For Reviewers:** This is a **personal** stack built around specific hardware, accounts, and live data streams. Because it is designed solely for a single-user(as of now), reviewers will not have a matching Garmin watch, ActivityWatch instance, or physical ESP32 with climate sensor.
 However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer** token and comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can spin up the stack very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
-> Also Everything is **still HTTP instead of HTTPS** since it's still local development and i haven't setup Azure deployment yet.
+> Also everything is **still HTTP instead of HTTPS** since it's still local development and i haven't setup Azure deployment yet.
 
 # System Architecture
 
@@ -38,7 +38,7 @@ flowchart LR
 
   Bridge <-->|"fetch +</br>OAuth"| GC
   User["User/</br> Scalar"] -->|"JWT"| API
-  SCD[SCD40] --> ESP[ESP32] -->|"climate /</br>device ID + API key"| API
+  SCD[SCD40] --> ESP[ESP32] -->|"climate /</br>device ID +</br>API key"| API
 ```
 
 Smartwatch → phone → Garmin is independent. The .NET API only talks to Garmin through the Python Bridge(using the unofficial `garminconnect` library) and only on `POST /sync/*`. GETs read Postgres.
@@ -192,7 +192,7 @@ Compose Demo values are placeholders. Do not reuse them on a public host.
 
 - Currently no frontend exists yet but it's planned, Vue or React with Grafana dashboards and such.
 
-I've just been using the OpenAPI Scalar UI page to check and test all my routes, and looking in my DB to see whats going on but it's also planned.
+I've just been using the OpenAPI Scalar UI page to check and test all my routes, and looking in my DB to see what's going on but it's also planned.
 
 Currently the state of the application has mostly been integrating all these different data sources and not creating any novel data or insights with it yet. But that will all increase over time, the first basic example of actual new data/info created from the gathered API data is the awake window.
 
@@ -200,9 +200,9 @@ Garmin itself doesn't store or calculate that data, it's not in their API but ob
 
 Next: Aligning timezones across the board, simple awake duration calculation from sleep start/end times, basic frontend with some Grafana charts
 
-Unit tests and CI should and need to be more extensive, most existing ones are focused on Garmin right now, those can still use a lot extra but other components need more or their first tests as wel
+Unit tests and CI should and need to be more extensive, most existing ones are focused on Garmin right now, those can still use a lot extra but other components need more or their first tests as well
 
-Setting up Azure environment so ESP32 can ingest room climate date 24/7, for more proper automated background services for the other components and for setting up and testing out production environment
+Setting up Azure environment so ESP32 can ingest room climate data 24/7, for more proper automated background services for the other components and for setting up and testing out production environment
 
 
 Still local HTTP. Azure App Service + Postgres is the next visible slice (HTTPS, ESP32 can post when the PC is off). No frontend yet; Scalar is the UI. Awake-window from sleep start/end is the first derived metric on the list. Timezones are not consistent everywhere — that is what `AppClock` is for.
