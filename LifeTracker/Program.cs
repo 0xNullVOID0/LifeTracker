@@ -8,6 +8,7 @@ using LifeTracker.Services;
 using LifeTracker.Services.Background;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -122,8 +123,17 @@ builder.Services.AddSingleton<AppClock>();
 
 //AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
 
+// Azure reverse proxy terminates TLS. Forwarded headers keep OpenAPI/Scalar on HTTPS, preventing mixed content block
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.KnownIPNetworks.Clear();
+    o.KnownProxies.Clear();
+});
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // retrieve JWT options again post build so it respects test overrides
 var JWT = app.Services.GetRequiredService<IOptions<JwtOptions>>().Value;
