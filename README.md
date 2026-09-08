@@ -18,9 +18,9 @@ Data collection is just step one. The real power comes from combining long-term 
 
 > [!IMPORTANT]
 > **For Reviewers:** This is a **personal** stack built around specific hardware, accounts, and live data streams. Because it is designed solely for a single-user(as of now), reviewers will not have a matching Garmin watch, ActivityWatch instance, or physical ESP32 with climate sensor.
-However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer** token and comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can spin up the stack very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
+However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer** token and comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can [Click here for Live **HTTPS** Azure App Service deploy(Demo mode with .NET + Postgre Docker containers)](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar), or spin up the stack yourself locally very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
 >
-> Local Compose is **HTTP**. [Click here for Live **HTTPS** Azure App Service deploy(Demo env, Postgres 18) with Scalar](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar)
+> Local Compose is **HTTP** only.
 
 
 
@@ -48,18 +48,18 @@ Smartwatch → phone → Garmin is independent. The .NET API only talks to Garmi
 
 ## Stack
 
-| Component       | What it is                                                                                                            |
-|-----------------|-----------------------------------------------------------------------------------------------------------------------|
-| LifeTracker API | ASP.NET 10 Core Web API(Minimal APIs), JWT for Auth, OpenAPI / Scalar with prefilled JWT Bearer for dev and demo      |
-| PostgreSQL 18   | Centralized database (Compose + Azure Flexible Server). Golden record of all integrations. EF Core + migrate-on-boot  |
+| Component       | What it is                                                                                                           |
+|-----------------|----------------------------------------------------------------------------------------------------------------------|
+| LifeTracker API | ASP.NET 10 Core Web API(Minimal APIs), JWT for Auth, OpenAPI / Scalar with prefilled JWT Bearer for dev and demo     |
+| PostgreSQL 18   | Centralized database (Compose + Azure Flexible Server). Golden record of all integrations. EF Core + migrate-on-boot |
 | Garmin bridge   | Python FastAPI + `garminconnect`(unofficial library). Tokens on a Docker volume. Shared API key for Auth with the .NET client |
-| ESP32 + SCD40   | Pushes CO₂ / temp / humidity to `POST /api/room-climate`                                                              |
-| ActivityWatch   | Desktop activity tracker integration from your/user's local AW server                                                 |
-| Buienradar      | Pulls and stores feed of the Heino weather station (hardcoded for now)                                                |
-| Azure           | App Service (Linux container) + Azure Database for PostgreSQL 18. HTTPS at the reverse proxy                     |
-| GitHub Actions  | CI with `dotnet restore` / `build` / `test` on push; container deploy workflow on `master`                            |
+| ESP32 + SCD40   | Pushes CO₂ / temp / humidity to `POST /api/room-climate`                                                             |
+| ActivityWatch   | Desktop activity tracker integration from your/user's local AW server                                                |
+| Buienradar      | Pulls and stores feed of the Heino weather station (hardcoded for now)                                               |
+| Azure           | App Service (Linux container) + Azure Database for PostgreSQL 18, HTTPS at the reverse proxy                    |
+| GitHub Actions  | CI with `dotnet restore` / `build` / `test` on push;                          |
 
-Compose runs **API + Postgres**. The bridge is a Compose **profile** (`garmin`), not part of the default Demo stack. Port **9002 is not published** on the default compose file; the API reaches the bridge on the Docker network. `docker-compose.override.yml` is for local poking at the sidecar.
+Compose runs **API + Postgres**. The Python Garmin Bridge is a Docker Compose **profile** (`garmin`), not part of the default Demo stack. Port **9002 is not published** on the default compose file; the API reaches the bridge on the Docker network. `docker-compose.override.yml` is for local poking at the sidecar.
 
 ## Quick start
 
@@ -79,13 +79,14 @@ Default compose env is **Demo**: Scalar has a Bearer token already, Garmin table
 
 ### Live Azure
 
-HTTPS API + Scalar (Demo, so OpenAPI/Scalar stay mapped):
+HTTPS API + Scalar in Demo mode
 
-| Urls                                                                                                         |                                                                                                
-|--------------------------------------------------------------------------------------------------------------
-| [Scalar](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar)           
-| [OpenAPI](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/openapi/v1.json) 
-| [Health](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/health)           
+| Service Endpoints |
+| :--- |
+| [Scalar API Documentation](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar) |
+| [OpenAPI Specification](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/openapi/v1.json) |
+| [Health Check Endpoint](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/health) |
+
 
 App Service terminates TLS in front of the container. The API trusts `X-Forwarded-*` so OpenAPI advertises `https://` and Scalar is not mixed-content blocked. Local HTTP is unchanged.
 
@@ -113,7 +114,7 @@ Run the API from Visual Studio: start `db` (and the bridge profile if you need s
 ## HTTP surface
 
 > [!IMPORTANT]
-> Local Compose / `dotnet run` is **HTTP**. Azure App Service is **HTTPS** (TLS at the reverse proxy, Demo env — not a locked-down Production environment yet).
+> Local Compose / `dotnet run` is **HTTP**. Azure App Service is **HTTPS** (TLS at the reverse proxy, Demo env, not a locked-down Production environment yet).
 
 `date` query is `yyyy-MM-dd`, defaults to today, future / garbage → 400 (`DateQueryMiddleware`(for param binding) & `DateQueryFilter`). Missing row → 204. Bridge down on sync → 503.
 
