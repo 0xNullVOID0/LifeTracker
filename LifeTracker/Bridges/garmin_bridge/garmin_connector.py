@@ -27,11 +27,8 @@ def get_garmin_client() -> Garmin:
     email = os.getenv("GARMIN_EMAIL")
     password = os.getenv("GARMIN_PASSWORD")
 
-    if not email or not password:
-        raise HTTPException(
-            status_code=500,
-            detail="No valid tokens and GARMIN_EMAIL/GARMIN_PASSWORD not set in .env",
-        )
+    if not (email and email.strip()) or not (password and password.strip()):
+        raise HTTPException(status_code=500, detail="No valid tokens and GARMIN_EMAIL/GARMIN_PASSWORD not set")
 
     # login using credentials and save token
     try:
@@ -49,10 +46,7 @@ def resolve_date(date_str: str | None) -> date:
     """None → today. Reject future dates with 400."""
     target = date.today() if date_str is None else date.fromisoformat(date_str)
     if target > date.today():
-        raise HTTPException(
-            status_code=400,
-            detail=f"No data for future date {target.isoformat()}",
-        )
+        raise HTTPException(status_code=400, detail=f"No data for future date {target.isoformat()}",)
     return target
 
 # for checking/comparing API key validity 
@@ -64,7 +58,7 @@ def _fixed_equals(left: str, right: str) -> bool:
 
 def require_bridge_api_key(x_api_key = Header(default=None, alias="X-API-Key")):
     if not BRIDGE_API_KEY.strip():
-        raise HTTPException(status_code=503, detail="Bridge API key is not configured")
+        raise HTTPException(status_code=500, detail="Bridge API key is not configured")
     if not _fixed_equals(x_api_key or "", BRIDGE_API_KEY):
         raise HTTPException(status_code=401, detail="Invalid API key")
  

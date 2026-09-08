@@ -9,7 +9,8 @@ public static class GarminEndpoints
 {
     public static IEndpointRouteBuilder MapGarminEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/garmin").WithTags("Garmin");
+        // Set route prefix and Error filter for group to turn expected Exceptions into proper ProblemDetails without unneccesary dev exception page bloat
+        var group = routes.MapGroup("/garmin").WithTags("Garmin").AddEndpointFilter(GarminBridgeErrorFilter.Handle);
 
         // TODO cancellation tokens?
 

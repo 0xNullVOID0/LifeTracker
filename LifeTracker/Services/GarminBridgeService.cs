@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using LifeTracker.DTOs.Garmin;
 using LifeTracker.Entities.Garmin;
 using Microsoft.EntityFrameworkCore;
@@ -133,15 +134,38 @@ public partial class GarminBridgeService(
     {
         string url = $"{endpoint}?date={date:yyyy-MM-dd}";
         using var response = await httpclient.GetAsync(url); // fetch request with data(could be empty) from Python Garmin Bridge API
-
-        if (response.StatusCode is HttpStatusCode.NoContent // 204 empty
-                                or HttpStatusCode.NotFound) // 404 future
-                                return default;
+        
+        if (response.StatusCode is HttpStatusCode.NoContent) // 204 empty
+            return default;
 
         if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"Python Garmin Bridge error {(int)response.StatusCode} for {url}");
+        {
+            string body = await response.Content.ReadAsStringAsync();
+            string? detail = TryReadFastApiDetail(body);
+            string message = "";
+            if (!string.IsNullOrWhiteSpace(detail))
+                message += $"{detail}";
+            throw new HttpRequestException(message);
+        }
 
         return await response.Content.ReadFromJsonAsync<T>(); // deserialize the response's body to type T
+    }
+
+    private static string? TryReadFastApiDetail(string body)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+            return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            return doc.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String
+                ? detail.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     // Syncs all Garmin data from the official API via the python GarminConnect bridge and upserts into DB
