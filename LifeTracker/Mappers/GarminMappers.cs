@@ -35,6 +35,10 @@ public static class GarminMapping
         return new DailySleep
         {
             Date = date,
+            StartGMT = DateTimeOffset.FromUnixTimeMilliseconds(d.SleepStartTimestampGMT),
+            EndGMT = DateTimeOffset.FromUnixTimeMilliseconds(d.SleepEndTimestampGMT),
+            StartLocal = DateTimeOffset.FromUnixTimeMilliseconds(d.SleepStartTimestampLocal),
+            EndLocal = DateTimeOffset.FromUnixTimeMilliseconds(d.SleepEndTimestampLocal),
             SleepTimeSeconds = d.SleepTimeSeconds,
             DeepSleepSeconds = d.DeepSleepSeconds,
             LightSleepSeconds = d.LightSleepSeconds,

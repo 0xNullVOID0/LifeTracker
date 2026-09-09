@@ -54,6 +54,11 @@ public static class GarminEndpoints
             .ConfigureRoute<DailySleep>("GetSleepByDay", "Get stored sleep for a specific day",
                 "Returns DailySleep from DB");
 
+        
+        dated.MapGarminGet("/sleep/awake-window", (service, date) => service.CalcAwakeWindow(date))
+            .ConfigureRoute<DailySleep>("CalcAwakeWindow", "Calculates the awake window for the given day",
+                "Calculates and returns the AwakeWindow by measuring the gap between the end of the preceding sleep session and the start of the subsequent sleep session for the given day.");
+        
         dated.MapGarminPost("/sync/heartrate", (service, date) => service.SyncHeartRateByDay(date))
             .ConfigureRoute<DailyHeartRate>("SyncHeartRateByDay", "Sync Garmin heart rate data",
                 "Fetches and syncs user'service heart rate data for a specific day");

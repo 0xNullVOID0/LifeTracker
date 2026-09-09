@@ -43,11 +43,16 @@ public static class DemoGarminSeeder
             });
 
             // don't add/create sleep data for today since day is not over yet so (probably/usually) no sleep data
+            // TODO make sleep start and end time variations
             if (date != today)
             {
                 db.DailySleeps.Add(new DailySleep
                 {
                     Date = date,
+                    StartGMT = new DateTimeOffset(date.AddDays(-1).ToDateTime(new TimeOnly(22, 0)), TimeSpan.Zero),
+                    EndGMT = new DateTimeOffset(date.ToDateTime(new TimeOnly(6, 0)), TimeSpan.Zero),
+                    StartLocal = new DateTimeOffset(date.AddDays(-1).ToDateTime(new TimeOnly(22, 0)), TimeSpan.Zero),
+                    EndLocal = new DateTimeOffset(date.ToDateTime(new TimeOnly(6, 0)), TimeSpan.Zero),
                     SleepTimeSeconds = 25_200 + (6 - offset) * 300,
                     DeepSleepSeconds = 5_400,
                     LightSleepSeconds = 14_400,

@@ -71,6 +71,25 @@ public partial class GarminBridgeService(
 
         return days;
     }
+    
+    public async Task<AwakeWindow?> CalcAwakeWindow(DateOnly date)
+    {
+        DailySleep? subsequentSleep = await GetSleepByDay(date);
+        if (subsequentSleep is null)
+            return null;
+
+        // TODO test and handle multiple sleeps on the same date such as going to bed after midnight and then going to bed the next time at 23:00. garmin counts them as naps under same sleep date i think
+    
+        // Find the preceding sleep session using the subsequent sleep's start time
+        DailySleep? priorSleep = await context.DailySleeps.Where(prior => prior.EndGMT < subsequentSleep.StartGMT)
+            .OrderByDescending(s => s.EndGMT)
+            .FirstOrDefaultAsync();
+        
+        if (priorSleep is null)
+            return null;
+
+        return new AwakeWindow(priorSleep, subsequentSleep);
+    }
 
     #endregion
 

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LifeTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260901043624_InitialCreate")]
+    [Migration("20260909095752_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -64,7 +64,7 @@ namespace LifeTracker.Migrations
                     b.ToTable("ActivityWatchEvents");
                 });
 
-            modelBuilder.Entity("LifeTracker.Entities.ESP32.BuienradarStationMeasurement", b =>
+            modelBuilder.Entity("LifeTracker.Entities.Buienradar.BuienradarStationMeasurement", b =>
                 {
                     b.Property<int>("StationID")
                         .HasColumnType("integer")
@@ -230,6 +230,12 @@ namespace LifeTracker.Migrations
                     b.Property<int>("DeepSleepSeconds")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset>("EndGMT")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("EndLocal")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("LightSleepSeconds")
                         .HasColumnType("integer");
 
@@ -238,6 +244,12 @@ namespace LifeTracker.Migrations
 
                     b.Property<int>("SleepTimeSeconds")
                         .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("StartGMT")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("StartLocal")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

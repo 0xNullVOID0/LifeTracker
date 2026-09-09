@@ -5,6 +5,14 @@ namespace LifeTracker.Entities.Garmin;
 public class DailySleep : GarminEntity
 
 {
+    public DateTimeOffset StartGMT { get; set; }
+    
+    public DateTimeOffset EndGMT { get; set; }
+    
+    public DateTimeOffset StartLocal { get; set; }
+    
+    public DateTimeOffset EndLocal { get; set; }
+    
     [DefaultValue(30780)]
     public int SleepTimeSeconds { get; set; }
 

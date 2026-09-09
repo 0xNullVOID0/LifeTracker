@@ -77,6 +77,10 @@ namespace LifeTracker.Migrations
                 columns: table => new
                 {
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    StartGMT = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    EndGMT = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    StartLocal = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    EndLocal = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     SleepTimeSeconds = table.Column<int>(type: "integer", nullable: false),
                     DeepSleepSeconds = table.Column<int>(type: "integer", nullable: false),
                     LightSleepSeconds = table.Column<int>(type: "integer", nullable: false),

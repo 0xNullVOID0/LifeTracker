@@ -67,6 +67,10 @@ public partial class GarminBridgeService
             // update existing values
             if (existing is not null)
             {
+                existing.StartGMT = dailySleep.StartGMT;
+                existing.EndGMT = dailySleep.EndGMT;
+                existing.StartLocal = dailySleep.StartLocal;
+                existing.EndLocal = dailySleep.EndLocal;
                 existing.SleepTimeSeconds = dailySleep.SleepTimeSeconds;
                 existing.DeepSleepSeconds = dailySleep.DeepSleepSeconds;
                 existing.LightSleepSeconds = dailySleep.LightSleepSeconds;

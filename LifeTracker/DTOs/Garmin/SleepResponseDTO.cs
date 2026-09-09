@@ -12,22 +12,39 @@ public sealed record SleepResponseDTO
 public sealed record DailySleepDTO
 {
     [JsonPropertyName("calendarDate")] public DateOnly CalendarDate { get; set; }
+    
+    [JsonPropertyName("sleepStartTimestampGMT")] 
+    public long SleepStartTimestampGMT { get; set; }
+    
+    [JsonPropertyName("sleepEndTimestampGMT")] 
+    public long SleepEndTimestampGMT { get; set; }
+    
+    [JsonPropertyName("sleepStartTimestampLocal")] 
+    public long SleepStartTimestampLocal { get; set; }
+    
+    [JsonPropertyName("sleepEndTimestampLocal")] 
+    public long SleepEndTimestampLocal { get; set; }
 
-    [JsonPropertyName("sleepTimeSeconds")] public int SleepTimeSeconds { get; set; }
+    [JsonPropertyName("sleepTimeSeconds")] 
+    public int SleepTimeSeconds { get; set; }
 
-    [JsonPropertyName("deepSleepSeconds")] public int DeepSleepSeconds { get; set; }
+    [JsonPropertyName("deepSleepSeconds")] 
+    public int DeepSleepSeconds { get; set; }
 
     [JsonPropertyName("lightSleepSeconds")]
     public int LightSleepSeconds { get; set; }
 
-    [JsonPropertyName("remSleepSeconds")] public int RemSleepSeconds { get; set; }
+    [JsonPropertyName("remSleepSeconds")] 
+    public int RemSleepSeconds { get; set; }
 
     [JsonPropertyName("awakeSleepSeconds")]
     public int AwakeSleepSeconds { get; set; }
 
-    [JsonPropertyName("avgHeartRate")] public double AvgHeartRate { get; set; }
+    [JsonPropertyName("avgHeartRate")] 
+    public double AvgHeartRate { get; set; }
 
-    [JsonPropertyName("avgSleepStress")] public double AvgSleepStress { get; set; }
+    [JsonPropertyName("avgSleepStress")] 
+    public double AvgSleepStress { get; set; }
 }
 
 public sealed record GarminTimeSampleDTO
