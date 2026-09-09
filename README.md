@@ -70,10 +70,11 @@ docker compose up --build -d
 After automatic migrate + Demo seed:
 
 
+| API Overview | URL |
 | --- | --- |
-| API | http://localhost:5071 |
 | Scalar | http://localhost:5071/scalar |
-| Health | http://localhost:5071/health |
+| OpenAPI Specification | http://localhost:5071/openapi/v1.json |
+| Health Check| http://localhost:5071/health |
 
 Default compose env is **Demo**: Scalar has a Bearer token already, Garmin tables get seed data, ActivityWatch and room-climate ingest return 503. Compose does not deploy Azure; that is a separate App Service + Postgres 18 instance.
 
@@ -81,14 +82,11 @@ Default compose env is **Demo**: Scalar has a Bearer token already, Garmin table
 
 HTTPS API + Scalar in Demo mode
 
-| Service Endpoints |
+| API Overview |
 | :--- |
-| [Scalar API Documentation](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar) |
+| [Scalar](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar) |
 | [OpenAPI Specification](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/openapi/v1.json) |
-| [Health Check Endpoint](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/health) |
-
-
-App Service terminates TLS in front of the container. The API trusts `X-Forwarded-*` so OpenAPI advertises `https://` and Scalar is not mixed-content blocked. Local HTTP is unchanged.
+| [Health Check](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/health) |
 
 ### Garmin (optional):
 Need Garmin account with actual data from a Garmin Smartwatch
@@ -114,7 +112,7 @@ Run the API from Visual Studio: start `db` (and the bridge profile if you need s
 ## HTTP surface
 
 > [!IMPORTANT]
-> Local Compose / `dotnet run` is **HTTP**. Azure App Service is **HTTPS** (TLS at the reverse proxy, Demo env, not a locked-down Production environment yet).
+> Local Compose / `dotnet run` is **HTTP**. Azure App Service is **HTTPS** (TLS at the reverse proxy, Demo env, not a locked down Production environment yet).
 
 `date` query is `yyyy-MM-dd`, defaults to today, future / garbage → 400 (`DateQueryMiddleware`(for param binding) & `DateQueryFilter`). Missing row → 204. Bridge down on sync → 503.
 
