@@ -10,6 +10,13 @@ public static class RoomClimateEndpoints
 {
     public static IEndpointRouteBuilder MapRoomClimateEndpoints(this IEndpointRouteBuilder routes)
     {
+        routes.MapGet("/room-climate", async (ESP32Service service) => 
+                OkOrNoContent(await service.GetAll())).WithName("GetAllRoomClimate").WithTags("RoomClimate")
+            .WithSummary("Get all room climate measurements from DB")
+            .Produces<List<RoomClimateMeasurement>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status401Unauthorized);
+
         // TODO fix handling route getting bad, wrong or not filled in json values
         routes.MapPost("/room-climate", async (RoomClimateMeasurement body, ESP32Service service, IHostEnvironment env) =>
         {

@@ -16,6 +16,9 @@ public class ESP32Service
         _logger = logger;
     }
 
+    public async Task<List<RoomClimateMeasurement>> GetAll() =>
+        await _context.RoomClimateMeasurements.AsNoTracking().OrderByDescending(m => m.Timestamp).ToListAsync();
+
     public async Task<RoomClimateMeasurement?> SaveRoomClimate(RoomClimateMeasurement? roomClimate)
     {
         if (roomClimate is null)
