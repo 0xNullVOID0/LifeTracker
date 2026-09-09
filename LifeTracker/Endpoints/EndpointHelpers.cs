@@ -10,5 +10,8 @@ public static class EndpointHelpers
         builder.WithName(name).WithSummary(summary).WithDescription(description)
             .Produces<T>(StatusCodes.Status200OK).Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status502BadGateway)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 }
