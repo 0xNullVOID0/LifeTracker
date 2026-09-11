@@ -2,6 +2,7 @@
 #include <SensirionI2cScd4x.h>
 #include <Wire.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include "time.h"
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
@@ -37,7 +38,10 @@ unsigned long lastSendTime = 0;
 const unsigned long sendInterval = 15000; // send every 15 sec
 
 const char* apiLogPath = "/api-sends.log";
-const size_t apiLogMaxBytes = 64 * 1024; // rotate when larger than 64 KB due to storage limitations on ESP32
+const char* apiTempPath = "/api-sends.tmp";
+const size_t apiLogMaxBytes = 64 * 1024; // rotate when larger than 64 KB
+
+bool failedToSend = true; // true by default so it sends on boot
 
 // Vars for storing climate sums to calc average
 int sampleCount = 0;
@@ -45,86 +49,10 @@ long sumCo2 = 0;
 double sumTemp = 0.0;
 double sumHumidity = 0.0;
 
-
 void PrintUint64(uint64_t& value) {
     Serial.print("0x");
     Serial.print((uint32_t)(value >> 32), HEX);
     Serial.print((uint32_t)(value & 0xFFFFFFFF), HEX);
-}
-
-void setup() {
-    Serial.begin(115200);
-    while (!Serial) {
-        delay(100);
-    }
-
-    if (!LittleFS.begin(false) && !LittleFS.begin(true)) {
-        Serial.println("LittleFS mount failed; API payloads will not be logged locally");
-    } else {
-        Serial.println("LittleFS mounted");
-    }
-
-    // Wifi setup — do not block forever so the sensor still runs if the API is down
-    WiFi.begin(ssid, password);
-    unsigned long wifiStart = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - wifiStart < 15000) {
-        delay(500);
-        Serial.print(".");
-    }
-    if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("\nWiFi connected");
-        Serial.print("IP: ");
-        Serial.println(WiFi.localIP());
-        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-    } else {
-        Serial.println("\nWiFi not available at boot; will retry on send");
-    }
-
-    // Setup climate sensor
-    Wire.begin();
-    sensor.begin(Wire, SCD41_I2C_ADDR_62);
-
-    uint64_t serialNumber = 0;
-    delay(30);
-    
-    error = sensor.wakeUp();
-    if (error != NO_ERROR) {
-        errorToString(error, errorMessage, sizeof errorMessage);
-        Serial.println(errorMessage);
-    }
-
-    error = sensor.stopPeriodicMeasurement();
-    if (error != NO_ERROR) {
-        errorToString(error, errorMessage, sizeof errorMessage);
-        Serial.println(errorMessage);
-    }
-
-    error = sensor.reinit();
-    if (error != NO_ERROR) {
-        errorToString(error, errorMessage, sizeof errorMessage);
-        Serial.println(errorMessage);
-    }
-    
-    error = sensor.getSerialNumber(serialNumber);
-    if (error != NO_ERROR) {
-        errorToString(error, errorMessage, sizeof errorMessage);
-        Serial.println(errorMessage);
-        return;
-    }
-
-    Serial.print("serial number: ");
-    PrintUint64(serialNumber);
-    Serial.println();
-
-    // Set temp offset 3c higher than default value
-    sensor.setTemperatureOffset(7.00);
-
-    error = sensor.startPeriodicMeasurement();
-    if (error != NO_ERROR) {
-        errorToString(error, errorMessage, sizeof errorMessage);
-        Serial.println(errorMessage);
-        return;
-    }
 }
 
 // Char buffers instead of dynamic strings to be heap safe
@@ -160,6 +88,7 @@ void rotateApiLogIfNeeded() {
 }
 
 void logFailedSend(const char* timeBuffer, const char* jsonBuffer, size_t jsonLen, int httpResponseCode, const char* reason) {
+    failedToSend = true;
     rotateApiLogIfNeeded();
 
     File logFile = LittleFS.open(apiLogPath, FILE_APPEND);
@@ -168,15 +97,9 @@ void logFailedSend(const char* timeBuffer, const char* jsonBuffer, size_t jsonLe
         return;
     }
 
-    logFile.print("{\"loggedAt\":\"");
-    logFile.print(timeBuffer);
-    logFile.print("\",\"httpStatus\":");
-    logFile.print(httpResponseCode);
-    logFile.print(",\"reason\":\"");
-    logFile.print(reason);
-    logFile.print("\",\"payload\":");
+    // Write raw RoomClimateMeasurement payload on its own line
     logFile.write((const uint8_t*)jsonBuffer, jsonLen);
-    logFile.println("}");
+    logFile.println();
     logFile.close();
 }
 
@@ -223,6 +146,73 @@ void fillTimeOrUnavailable(char* timeBuffer, size_t maxLen, bool* hasTime) {
     timeBuffer[maxLen - 1] = '\0';
 }
 
+// Extract and re-POST logged payloads from LittleFS to the .NET API
+void processLoggedSends() {
+    if (WiFi.status() != WL_CONNECTED || !LittleFS.exists(apiLogPath)) {
+        return;
+    }
+
+    File logFile = LittleFS.open(apiLogPath, FILE_READ);
+    if (!logFile || logFile.size() == 0) {
+        if (logFile) logFile.close();
+        return;
+    }
+
+    Serial.println("[DEBUG] Extracting and sending batched payloads from LittleFS...");
+
+    JsonDocument arrayDoc;
+    JsonArray array = arrayDoc.to<JsonArray>();
+
+    while (logFile.available()) {
+        String line = logFile.readStringUntil('\n');
+        line.trim();
+        if (line.length() == 0) continue;
+
+        JsonDocument lineDoc;
+        DeserializationError err = deserializeJson(lineDoc, line);
+        if (!err) {
+            array.add(lineDoc);
+        }
+    }
+    logFile.close();
+
+    if (array.size() == 0) {
+        LittleFS.remove(apiLogPath);
+        return;
+    }
+
+    String batchPayload;
+    serializeJson(arrayDoc, batchPayload);
+    
+    char batchEndpoint[128];
+    snprintf(batchEndpoint, sizeof(batchEndpoint), "%s/batch", apiEndpoint);
+
+    Serial.printf("[DEBUG] Posting batch to: %s\n", batchEndpoint);
+
+    WiFiClientSecure client;
+    client.setInsecure(); // skip SSL certificate validation (disables root cert check while keeping TLS encryption)
+
+    HTTPClient http;
+    http.begin(client, batchEndpoint);
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-Device-ID", deviceID);
+    http.addHeader("X-API-Key", apiKey);
+
+    int httpResponseCode = http.POST(batchPayload);
+    String responseBody = http.getString();
+    http.end();
+
+    Serial.printf("[DEBUG] Batch HTTP Status: %d\n", httpResponseCode);
+    Serial.printf("[DEBUG] Batch Response Body: %s\n", responseBody.c_str());
+
+    if (httpResponseCode == 200 || httpResponseCode == 201) {
+        Serial.printf("Successfully sent batch of %d records!\n", array.size());
+        LittleFS.remove(apiLogPath);
+    } else {
+        Serial.printf("Batch send failed. Retaining LittleFS log.\n");
+    }
+}
+
 // Send room climate data to .NET backend API
 void sendClimateData(int co2, double temp, double humidity) {
     bool wifiOk = reconnectWifi();
@@ -235,43 +225,125 @@ void sendClimateData(int co2, double temp, double humidity) {
     size_t n = 0;
     buildClimatePayload(jsonBuffer, sizeof(jsonBuffer), &n, timeBuffer, co2, temp, humidity);
 
+    Serial.printf("[DEBUG] Payload to send: %s\n", jsonBuffer);
+
     if (!wifiOk) {
+        Serial.println("ERROR sending: WiFi reconnect failed");
         logFailedSend(timeBuffer, jsonBuffer, n, 0, "wifi_reconnect_failed");
         return;
     }
 
     if (!hasTime) {
+        Serial.println("ERROR sending: Time unavailable");
         logFailedSend(timeBuffer, jsonBuffer, n, 0, "time_unavailable");
         return;
     }
 
-    HTTPClient http;
+    Serial.printf("[DEBUG] Posting single payload to endpoint: %s\n", apiEndpoint);
+    Serial.printf("[DEBUG] Using DeviceID: %s | API Key length: %d\n", deviceID, strlen(apiKey));
 
-    // Prevent pbuf leaks by letting http client manage it's connection internally
-    http.begin(apiEndpoint);
+    WiFiClientSecure client;
+    client.setInsecure();
+
+    HTTPClient http;
+    http.begin(client, String(apiEndpoint));
     http.addHeader("Content-Type", "application/json");
     http.addHeader("X-Device-ID", deviceID);
     http.addHeader("X-API-Key", apiKey);
 
     int httpResponseCode = http.POST((uint8_t*)jsonBuffer, n);
+    String responseBody = http.getString();
+    http.end();
 
-    // Only log when POST to API failed
-    if (httpResponseCode != 200) {
+    Serial.printf("[DEBUG] HTTP Status Code: %d\n", httpResponseCode);
+    Serial.printf("[DEBUG] Response Body: %s\n", responseBody.c_str());
+
+    if (httpResponseCode == 200 || httpResponseCode == 201) {
+        Serial.println("Send successful!");
+        
+        if (failedToSend == true) {
+            processLoggedSends();
+        }
+        
+        failedToSend = false;
+    } else {
+        Serial.printf("ERROR sending data. Logging locally to LittleFS.\n");
         logFailedSend(timeBuffer, jsonBuffer, n, httpResponseCode, "http");
     }
 
-    if (httpResponseCode > 0) {
-        Serial.print("Send averaged data - Code: ");
-        Serial.println(httpResponseCode);
-    } else {
-        Serial.print("ERROR sending: ");
-        Serial.println(httpResponseCode);
+    delay(50);
+}
+
+void setup() {
+    Serial.begin(115200);
+    while (!Serial) {
+        delay(100);
     }
 
-    http.end();
+    if (!LittleFS.begin(false) && !LittleFS.begin(true)) {
+        Serial.println("LittleFS mount failed; API payloads will not be logged locally");
+    } else {
+        Serial.println("LittleFS mounted");
+    }
+
+    WiFi.begin(ssid, password);
+    unsigned long wifiStart = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - wifiStart < 15000) {
+        delay(500);
+        Serial.print(".");
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\nWiFi connected");
+        Serial.print("IP: ");
+        Serial.println(WiFi.localIP());
+        configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    } else {
+        Serial.println("\nWiFi not available at boot; will retry on send");
+    }
+
+    Wire.begin();
+    sensor.begin(Wire, SCD41_I2C_ADDR_62);
+
+    uint64_t serialNumber = 0;
+    delay(30);
     
-    // Small delay for network stack socket cleanup
-    delay(50);
+    error = sensor.wakeUp();
+    if (error != NO_ERROR) {
+        errorToString(error, errorMessage, sizeof errorMessage);
+        Serial.println(errorMessage);
+    }
+
+    error = sensor.stopPeriodicMeasurement();
+    if (error != NO_ERROR) {
+        errorToString(error, errorMessage, sizeof errorMessage);
+        Serial.println(errorMessage);
+    }
+
+    error = sensor.reinit();
+    if (error != NO_ERROR) {
+        errorToString(error, errorMessage, sizeof errorMessage);
+        Serial.println(errorMessage);
+    }
+    
+    error = sensor.getSerialNumber(serialNumber);
+    if (error != NO_ERROR) {
+        errorToString(error, errorMessage, sizeof errorMessage);
+        Serial.println(errorMessage);
+        return;
+    }
+
+    Serial.print("serial number: ");
+    PrintUint64(serialNumber);
+    Serial.println();
+
+    sensor.setTemperatureOffset(7.00);
+
+    error = sensor.startPeriodicMeasurement();
+    if (error != NO_ERROR) {
+        errorToString(error, errorMessage, sizeof errorMessage);
+        Serial.println(errorMessage);
+        return;
+    }
 }
 
 void loop() {
