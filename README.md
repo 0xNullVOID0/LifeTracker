@@ -112,7 +112,7 @@ Run the API from Visual Studio: start `db` (and the bridge profile if you need s
 ## HTTP surface
 
 > [!IMPORTANT]
-> Local Compose / `dotnet run` is **HTTP**. Azure App Service is **HTTPS** (TLS at the reverse proxy, Demo env, not a locked down Production environment yet).
+> Local Compose / `dotnet run` is **HTTP**. Azure App Service is **HTTPS** (TLS at the reverse proxy, Demo env, not a complete Production environment yet but almost).
 
 `date` query is `yyyy-MM-dd`, defaults to today, future / garbage → 400 (`DateQueryMiddleware`(for param binding) & `DateQueryFilter`). Missing row → 204. Bridge down on sync → 503.
 
@@ -201,6 +201,8 @@ Compose Demo values are placeholders. Do not reuse them on a public host.
 
 ## Acknowledgements & Slight Roadmap
 
+**Very specific personal platform, not a product. Unofficial Garmin API, personal hardware(ESP32, Garmin smartwatch), rate limits if you hammer sync and other 3rd party software like ActivityWatch required to make actual and full use of the application/platform**
+
 - Local Compose is HTTP. Azure App Service is HTTPS.
 
 - Timezones aren't properly aligned in every spot yet, need to do a proper overhaul and check for every component there.(WIP)
@@ -209,14 +211,11 @@ Compose Demo values are placeholders. Do not reuse them on a public host.
 
 I've just been using the OpenAPI Scalar UI page to check and test all my routes, and looking in my DB to see what's going on but it's also planned.
 
-Currently the state of the application has mostly been integrating all these different data sources and not creating any novel data or insights with it yet. But that will all increase over time, the first basic example of actual new data/info created from the gathered API data is the awake window.
+Currently the state of the application has mostly been integrating all these different data sources and not creating much novel data or insights with yet. Although the local room climate measurements is completely new data and AwakeWindow is also the first derived data point calculated from the gathered Garmin sleep data.
 
-Garmin itself doesn't store or calculate that data, it's not in their API but obviously it can all be inferred just using the sleep start and end times.
-
-Next: Aligning timezones across the board, simple awake duration calculation from sleep start/end times, basic frontend with some Grafana charts
+Next: Aligning timezones across the board, basic frontend with some Grafana charts
 
 Unit tests and CI should and need to be more extensive, most existing ones are focused on Garmin right now, those can still use a lot extra but other components need more or their first tests as well
 
-Azure API + Postgres 18 is up but still early WIP, so ESP32 can ingest room climate 24/7 next,  plus more automated background services and a real Production environment (Scalar is still Demo-gated)
+Azure API + Postgres 18 is up but still early WIP, plus more automated background services and a real Production environment (Scalar is still Demo-gated)
 
-Very specific personal platform, not a product. Unofficial Garmin API, personal hardware, rate limits if you hammer sync. Demo compose is the supported reviewer path.
