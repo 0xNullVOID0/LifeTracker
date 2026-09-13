@@ -31,6 +31,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Checkout frontend
+        uses: actions/checkout@v5
+        with:
+          repository: 0xNullVOID0/LifeTracker-Frontend
+          path: frontend
+          token: ${{ secrets.FRONTEND_REPO_TOKEN || github.token }}
+
       - name: Log in to ACR
         uses: docker/login-action@v3
         with:

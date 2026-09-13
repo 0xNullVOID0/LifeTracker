@@ -1,3 +1,13 @@
+# --- Frontend ---
+FROM node:22-bookworm-slim AS frontend
+WORKDIR /web
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+ENV VITE_API_BASE=
+ENV VITE_AZURE_API=
+RUN npm run build
+
 # --- Build Stage ---
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
@@ -21,9 +31,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/publish .
+COPY --from=frontend /web/dist ./wwwroot
 
 EXPOSE 8080
 # EXPOSE 8081 
-# TODO whats 8081 for? (Often used for HTTPS endpoints or sidecar metrics, but 8080 is your primary HTTP traffic port)
 
 ENTRYPOINT ["dotnet", "LifeTracker.dll"]

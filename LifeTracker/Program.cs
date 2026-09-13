@@ -65,8 +65,8 @@ builder.Services.AddOpenApi(options =>
         {
             new() { Name = "Buienradar" },
             new() { Name = "Garmin" },
-            new() { Name = "ActivityWatch" },
             new() { Name = "RoomClimate" },
+            new() { Name = "ActivityWatch" },
             new() { Name = "Auth" }
         }.ToHashSet();
 
@@ -168,6 +168,15 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// add frontend 
+var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+var hasSPA = File.Exists(Path.Combine(webRoot, "index.html"));
+if (hasSPA)
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
+
 app.MapHealthChecks("/health").AllowAnonymous();
 
 
@@ -251,8 +260,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 
-// bind default route to scalar too
-app.MapGet("/", () => Results.Redirect("/scalar")).AllowAnonymous().ExcludeFromDescription();
+if (hasSPA)
+    app.MapFallbackToFile("index.html").AllowAnonymous();
+else
+    app.MapGet("/", () => Results.Redirect("/scalar")).AllowAnonymous().ExcludeFromDescription();
 
 app.Run();
 
