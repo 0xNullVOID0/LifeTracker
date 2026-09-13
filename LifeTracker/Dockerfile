@@ -22,6 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=build /app/publish .
 
 EXPOSE 8080
-EXPOSE 8081
+# EXPOSE 8081 
 
 ENTRYPOINT ["dotnet", "LifeTracker.dll"]
