@@ -207,8 +207,6 @@ Compose Demo values are placeholders. Do not reuse them on a public host.
 
 - Timezones aren't properly aligned in every spot yet, need to do a proper overhaul and check for every component there.(WIP)
 
-- Currently no frontend exists yet but it's planned, Vue or React with Grafana dashboards and such.
-
 I've just been using the OpenAPI Scalar UI page to check and test all my routes, and looking in my DB to see what's going on but it's also planned.
 
 Currently the state of the application has mostly been integrating all these different data sources and not creating much novel data or insights with yet. Although the local room climate measurements is completely new data and AwakeWindow is also the first derived data point calculated from the gathered Garmin sleep data.
