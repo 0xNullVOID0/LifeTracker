@@ -22,6 +22,8 @@ However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer
 >
 > Local Compose is **HTTP** only.
 
+> [!IMPORTANT]
+> [Here is the new frontend(WIP) on azure as well](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/), still subject to major changes in design, layout and functionality. It was prototyped over the weekend 
 
 
 # System Architecture
