@@ -165,17 +165,16 @@ else
 app.UseMiddleware<DateQueryMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
+var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+var spaIndex = Path.Combine(webRoot, "index.html");
+var hasSpa = File.Exists(spaIndex);
+app.Logger.LogInformation("SPA index.html {Status} at {Path}", hasSpa ? "found" : "MISSING", spaIndex);
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-// add frontend 
-var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-var hasSPA = File.Exists(Path.Combine(webRoot, "index.html"));
-if (hasSPA)
-{
-    app.UseDefaultFiles();
-    app.UseStaticFiles();
-}
 
 app.MapHealthChecks("/health").AllowAnonymous();
 
@@ -260,10 +259,15 @@ using (var scope = app.Services.CreateScope())
 }
 
 
-if (hasSPA)
+if (hasSpa)
+{
     app.MapFallbackToFile("index.html").AllowAnonymous();
+}
 else
+// else if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Demo"))
+{
     app.MapGet("/", () => Results.Redirect("/scalar")).AllowAnonymous().ExcludeFromDescription();
+}
 
 app.Run();
 

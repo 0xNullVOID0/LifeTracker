@@ -7,6 +7,7 @@ COPY frontend/ ./
 ENV VITE_API_BASE=
 ENV VITE_AZURE_API=
 RUN npm run build
+RUN test -f /web/dist/index.html
 
 # --- Build Stage ---
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
