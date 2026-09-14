@@ -18,12 +18,13 @@ Data collection is just step one. The real power comes from combining long-term 
 
 > [!IMPORTANT]
 > **For Reviewers:** This is a **personal** stack built around specific hardware, accounts, and live data streams. Because it is designed solely for a single-user(as of now), reviewers will not have a matching Garmin watch, ActivityWatch instance, or physical ESP32 with climate sensor.
-However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer** token and comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can [Click here for Live **HTTPS** Azure App Service deploy(Demo mode with .NET + Postgre Docker containers)](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar), or spin up the stack yourself locally very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
+However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer** token and comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can [Click here for Live **HTTPS** Azure App Service deploy(Demo mode with .NET + Postgre Docker containers)](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/scalar), or spin up the stack yourself locally very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
 >
 > Local Compose is **HTTP** only.
 
 > [!IMPORTANT]
-> [Here is the new frontend(WIP) on azure as well](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/), still subject to major changes in design, layout and functionality. It was prototyped over the weekend, the password is "demo"
+> [Here is the new frontend(**WIP**) on azure as well](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/), **still subject to major changes** in design, layout and functionality. It was prototyped over the weekend, **the password is "demo".**
+> **The 13th** will have the most complete data for the inside/outside climate correlation/comparison chart
 
 
 # System Architecture
@@ -86,9 +87,10 @@ HTTPS API + Scalar in Demo mode
 
 | API Overview |
 | :--- |
-| [Scalar](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/scalar) |
-| [OpenAPI Specification](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/openapi/v1.json) |
-| [Health Check](https://lifetracker-api-yourname-bpapfecce7crbjap.italynorth-01.azurewebsites.net/health) |
+| [Frontend](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net) |
+| [Scalar](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/scalar) |
+| [OpenAPI Specification](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/openapi/v1.json) |
+| [Health Check](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/health) |
 
 ### Garmin (optional):
 Need Garmin account with actual data from a Garmin Smartwatch
