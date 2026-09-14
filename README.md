@@ -52,18 +52,22 @@ Separate repo: [0xNullVOID0/LifeTracker-Frontend](https://github.com/0xNullVOID0
 flowchart LR
   Watch[Smartwatch] --> Phone[Phone] --> GC[Garmin]
 
-  subgraph Stack["LifeTracker Backend"]
+
+  subgraph Stack["LifeTracker"]
+    UI["React SPA<br/>or Scalar"]
     API[".NET API"]
     Bridge["Python Bridge"]
-    DB[("Postgres")]
+    DB[("Postgres 18")]
+    Fn["Azure Function<br/>ESP32 ingest"]
+    UI <-->|"JWT/</br>data"| API
     API -->|"sync + API key"| Bridge
     Bridge -->|"payload"| API
     API <-->|"EF Core"| DB
   end
 
-  Bridge <-->|"fetch +</br>OAuth"| GC
-  User["User/</br> Scalar"] -->|"JWT"| API
-  SCD[SCD40] --> ESP[ESP32] -->|"climate /</br>device ID +</br>API key"| API
+  Bridge <-->|"fetch +<br/>OAuth"| GC
+  ESP[ESP32 +</br>SCD40] -->|"climate /</br>device ID +</br>API key"| Fn
+  Fn --> API
 ```
 
 Smartwatch → phone → Garmin is independent. The .NET API only talks to Garmin through the Python Bridge(using the unofficial `garminconnect` library) and only on `POST /sync/*`. GETs read Postgres.
