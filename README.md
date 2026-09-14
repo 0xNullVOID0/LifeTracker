@@ -16,18 +16,29 @@ Data collection is just step one. The real power comes from combining long-term 
 
 - **Hardware, Climate & Software Workloads:** Tracking how the weather and differing seasons combined with desktop activity like idling, heavy development environments or extensive gaming sessions directly impact hardware performance and metrics such as temps, voltages and CPU/GPU usage. Since as far as im aware no real hardware monitor exists that actually combines your specific desktop activity, so this would bridge another common gap between different applications and data sets. Also seeing how long term heavy load could affect room temperature would be interesting.
 
+Right now **Garmin(heart/sleep/stress) + local room climate + weather** are the most developed, plus the first small derived metric from external API data (**Awake window** from sleep). ActivityWatch is disabled in demo due to least focus and also privacy concerns for making that public till curated slice or Seeder is made, rest of the data is a 1 week slice for Garmin and climate data from 11th till now which i'm fine with sharing.
+
 > [!IMPORTANT]
 > **For Reviewers:** This is a **personal** stack built around specific hardware, accounts, and live data streams. Because it is designed solely for a single-user(as of now), reviewers will not have a matching Garmin watch, ActivityWatch instance, or physical ESP32 with climate sensor.
-> The current Azure deployment has a 1 week slice of my real Garmin data, room climate measurements & buienradar data starting from the 11th with mostly 24/7 local room measurements starting from the 13th when i finally plugged the ESP32 into a power socket instead of PC usb which turned off during the night.
-> They both run in Demo mode which prefills a **JWT Bearer** token for Scalar and a local Docker install comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can [Click here for **HTTPS** Scalar/OpenAPI page on the Azure App Service deploy(Demo mode with .NET + Postgre Docker containers)](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/scalar), **the Frontend link is below** or spin up the stack yourself locally very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
 >
-> Local Compose is **HTTP** only.
+> Default is **Demo mode** with seeded Garmin days(for local Docker install, Azure has real 1 week slice), Scalar with a prefilled JWT Bearer, password is **`demo`**.
+>
+> **Live Azure (HTTPS, API + SPA in one container):**
+> - [Frontend](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/)
+> - [Scalar](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/scalar)
+> - [OpenAPI Specification](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/openapi/v1.json)
+> - [Health Check](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/health)
+>
+> Local: `docker compose up --build -d` http://localhost:5071/scalar (Frontend hasn't been included into docker compose yet, currently just with the CD pipeline for the Azure deploy)
+
+
+# Frontend
+
+
+Separate repo: [0xNullVOID0/LifeTracker-Frontend](https://github.com/0xNullVOID0/LifeTracker-Frontend) — SPA with React + TypeScript and Vite, frontend that plugs into LifeTracker's .NET API
 
 > [!IMPORTANT]
-> [Here is the new frontend(**WIP**) on Azure as well](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/), **still subject to major changes** in design, layout and functionality. It was prototyped over the weekend, **the password is "demo".**
-> **The 13th** will have the most complete data for the inside/outside climate correlation/comparison chart
-
-# Frontend preview
+> **Still subject to major changes** in design, layout and functionality. **It was prototyped over the weekend.**
 
 <img width="1205" height="632" alt="image" src="https://github.com/user-attachments/assets/82a535cf-07d5-43b2-96c0-f6ec50a96d96" />
 <img width="1186" height="1267" alt="image" src="https://github.com/user-attachments/assets/59150f10-1170-4d94-b5b5-5df973401bf3" />
@@ -88,17 +99,6 @@ After automatic migrate + Demo seed:
 | Health Check| http://localhost:5071/health |
 
 Default compose env is **Demo**: Scalar has a Bearer token already, Garmin tables get seed data, ActivityWatch and room-climate ingest return 503. Compose does not deploy Azure; that is a separate App Service + Postgres 18 instance.
-
-### Live Azure
-
-HTTPS API + Scalar in Demo mode
-
-| API Overview |
-| :--- |
-| [Frontend](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net) |
-| [Scalar](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/scalar) |
-| [OpenAPI Specification](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/openapi/v1.json) |
-| [Health Check](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/health) |
 
 ### Garmin (optional):
 Need Garmin account with actual data from a Garmin Smartwatch
