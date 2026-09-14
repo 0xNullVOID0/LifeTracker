@@ -26,6 +26,13 @@ However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer
 > [Here is the new frontend(**WIP**) on azure as well](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/), **still subject to major changes** in design, layout and functionality. It was prototyped over the weekend, **the password is "demo".**
 > **The 13th** will have the most complete data for the inside/outside climate correlation/comparison chart
 
+# Frontend preview
+
+<img width="1205" height="632" alt="image" src="https://github.com/user-attachments/assets/82a535cf-07d5-43b2-96c0-f6ec50a96d96" />
+<img width="1186" height="1267" alt="image" src="https://github.com/user-attachments/assets/59150f10-1170-4d94-b5b5-5df973401bf3" />
+
+
+
 
 # System Architecture
 
