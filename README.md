@@ -18,12 +18,13 @@ Data collection is just step one. The real power comes from combining long-term 
 
 > [!IMPORTANT]
 > **For Reviewers:** This is a **personal** stack built around specific hardware, accounts, and live data streams. Because it is designed solely for a single-user(as of now), reviewers will not have a matching Garmin watch, ActivityWatch instance, or physical ESP32 with climate sensor.
-However by default the repository runs in **Demo Mode**, prefills a **JWT Bearer** token and comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can [Click here for Live **HTTPS** Azure App Service deploy(Demo mode with .NET + Postgre Docker containers)](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/scalar), or spin up the stack yourself locally very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
+> The current Azure deployment has a 1 week slice of my real Garmin data, room climate measurements & buienradar data starting from the 11th with mostly 24/7 local room measurements starting from the 13th when i finally plugged the ESP32 into a power socket instead of PC usb which turned off during the night.
+> They both run in Demo mode which prefills a **JWT Bearer** token for Scalar and a local Docker install comes with a database that gets seeded with records on first launch(as of now just Garmin records since those are the most extensive routes). You can [Click here for **HTTPS** Scalar/OpenAPI page on the Azure App Service deploy(Demo mode with .NET + Postgre Docker containers)](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/scalar), **the Frontend link is below** or spin up the stack yourself locally very easily with `docker compose up --build -d` and open http://localhost:5071/scalar to explore the OpenAPI documented routes in Scalar and test all Garmin `GET` & Buienradar endpoints without anything else required.
 >
 > Local Compose is **HTTP** only.
 
 > [!IMPORTANT]
-> [Here is the new frontend(**WIP**) on azure as well](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/), **still subject to major changes** in design, layout and functionality. It was prototyped over the weekend, **the password is "demo".**
+> [Here is the new frontend(**WIP**) on Azure as well](https://lifetracker-adfrcsapexfubea8.swedencentral-01.azurewebsites.net/), **still subject to major changes** in design, layout and functionality. It was prototyped over the weekend, **the password is "demo".**
 > **The 13th** will have the most complete data for the inside/outside climate correlation/comparison chart
 
 # Frontend preview
@@ -218,13 +219,7 @@ Compose Demo values are placeholders. Do not reuse them on a public host.
 
 - Timezones aren't properly aligned in every spot yet, need to do a proper overhaul and check for every component there.(WIP)
 
-I've just been using the OpenAPI Scalar UI page to check and test all my routes, and looking in my DB to see what's going on but it's also planned.
+Currently the state of the application has mostly been integrating all these different data sources and not creating much novel data or insights with yet but the first ones are starting to sprout. Local room climate measurements from SCD40 correlated/compared to Buienradar temp/humidity data overlayed on the same charts and AwakeWindow is also the first derived data point calculated from the gathered Garmin sleep data.
 
-Currently the state of the application has mostly been integrating all these different data sources and not creating much novel data or insights with yet. Although the local room climate measurements is completely new data and AwakeWindow is also the first derived data point calculated from the gathered Garmin sleep data.
-
-Next: Aligning timezones across the board, basic frontend with some Grafana charts
-
-Unit tests and CI should and need to be more extensive, most existing ones are focused on Garmin right now, those can still use a lot extra but other components need more or their first tests as well
-
-Azure API + Postgres 18 is up but still early WIP, plus more automated background services and a real Production environment (Scalar is still Demo-gated)
+Next: Aligning timezones across the board, Unit and integration tests for every route and more extensive ones, most existing ones are focused on Garmin right now.
 
