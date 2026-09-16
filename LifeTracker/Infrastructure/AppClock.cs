@@ -23,6 +23,11 @@ public sealed class AppClock
     public DateOnly ToLocalDate(DateTimeOffset utc) =>
         DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(utc, _zone).DateTime);
 
-    public DateTimeOffset StartOfLocalDay(DateOnly day) =>
-        new(day.ToDateTime(TimeOnly.MinValue), _zone.GetUtcOffset(day.ToDateTime(TimeOnly.MinValue)));
+
+    // Npgsql timestamptz only accepts DateTimeOffset with offset 0.
+    public DateTimeOffset StartOfLocalDay(DateOnly day)
+    {
+        var localMidnight = DateTime.SpecifyKind(day.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified);
+        return new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(localMidnight, _zone), TimeSpan.Zero);
+    }
 }

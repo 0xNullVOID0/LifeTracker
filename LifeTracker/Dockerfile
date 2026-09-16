@@ -1,5 +1,9 @@
+# Azure CI checks out the SPA into ./frontend and leaves FRONTEND_IMAGE at the default.
+# Local compose sets FRONTEND_IMAGE=frontend-stub so the Node copy is skipped.
+ARG FRONTEND_IMAGE=frontend-spa
+
 # --- Frontend ---
-FROM node:22-bookworm-slim AS frontend
+FROM node:22-bookworm-slim AS frontend-spa
 WORKDIR /web
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
@@ -8,6 +12,14 @@ ENV VITE_API_BASE=
 ENV VITE_AZURE_API=
 RUN npm run build
 RUN test -f /web/dist/index.html
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS frontend-stub
+WORKDIR /web
+RUN mkdir -p /web/dist && printf '%s\n' \
+    '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>LifeTracker</title></head><body><p>SPA is not bundled in the local image. Use <a href="/scalar">/scalar</a>.</p></body></html>' \
+    > /web/dist/index.html
+
+FROM ${FRONTEND_IMAGE} AS frontend
 
 # --- Build Stage ---
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build

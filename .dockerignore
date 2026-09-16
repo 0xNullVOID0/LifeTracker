@@ -1,0 +1,12 @@
+.git
+.github
+.vs
+**/.vs
+**/bin
+**/obj
+**/node_modules
+**/.env
+LifeTracker.Tests
+Esp32Ingest
+*.user
+*.suo

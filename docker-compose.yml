@@ -40,8 +40,12 @@ services:
 
   api:
     build:
-      context: ./LifeTracker
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./LifeTracker/Dockerfile
+      args:
+        # Azure default is frontend-spa (CI checks out the SPA into ./frontend).
+        # Override with FRONTEND_IMAGE=frontend-spa if you clone the SPA locally.
+        FRONTEND_IMAGE: ${FRONTEND_IMAGE:-frontend-stub}
     container_name: lifetracker-api
     ports:
       - "5071:8080"
