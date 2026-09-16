@@ -14,6 +14,11 @@ public static class ActivityWatchEndpoints
         group.MapGet("/", async (DateTimeOffset? start, DateTimeOffset? end, ActivityWatchService service) =>
         {
             var data = start.HasValue ? await service.GetEvents(start.Value, end) : await service.GetEvents();
+
+            // TODO move to global datequeryfilter, its own daterange filter or the middleware
+             if (start > end)
+                    return Results.BadRequest(new { error = "start must be before or equal to end." });
+
             return OkOrNoContent(data);
         }).WithName("GetActivityWatchEvents");
 
