@@ -23,18 +23,18 @@ public static class RoomClimateEndpoints
                     return OkOrNoContent(await service.GetByDay(clock.Today()));
                 else if (start.HasValue && !end.HasValue)
                 {
-                    from = start.Value;
+                    from = start.Value.ToUniversalTime();
                     to = clock.StartOfLocalDay(clock.ToLocalDate(start.Value).AddDays(1));
                 }
                 else if (!start.HasValue && end.HasValue)
                 {
                     from = clock.StartOfLocalDay(clock.ToLocalDate(end.Value));
-                    to = end.Value;
+                    to = end.Value.ToUniversalTime();
                 }
                 else
                 {
-                    from = start.Value;
-                    to = end.Value;
+                    from = start.Value.ToUniversalTime();
+                    to = end.Value.ToUniversalTime();
                 }
 
                 if (from > to)

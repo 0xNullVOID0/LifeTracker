@@ -85,7 +85,7 @@ Smartwatch → phone → Garmin is independent. The .NET API only talks to Garmi
 | Azure           | App Service (Linux container) + Azure Database for PostgreSQL 18, HTTPS at the reverse proxy                    |
 | GitHub Actions  | CI with `dotnet restore` / `build` / `test` on push;                          |
 
-Compose runs **API + Postgres**. The Python Garmin Bridge is a Docker Compose **profile** (`garmin`), not part of the default Demo stack. Port **9002 is not published** on the default compose file; the API reaches the bridge on the Docker network. `docker-compose.override.yml` is for local poking at the sidecar.
+Compose runs **API + Postgres**. The Python Garmin Bridge is a Docker Compose **profile** (`garmin`), not part of the default Demo stack. Port **9002 is not published** on the default compose file; the API reaches the bridge on the Docker network. `docker-compose.override.yml` is for local poking at the sidecar. 
 
 ## Quick start
 
